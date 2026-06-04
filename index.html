@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBF 밸류체인 모니터 | AI 메모리 대시보드</title>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --card-bg: #111827;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --green: #10b981;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --accent: #6366f1;
+    --gold: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'Segoe UI', 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(59,130,246,0.06) 0%, transparent 50%);
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 40px 20px 30px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 30px;
+  }
+  .header .badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.15);
+    color: #a5b4fc;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  .header h1 {
+    font-size: 2.2em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #818cf8, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .header .update-time {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  /* Summary Cards */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+  .summary-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .summary-card .label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .summary-card .value { font-size: 24px; font-weight: 700; margin: 4px 0; }
+  .summary-card .unit { font-size: 12px; color: var(--text-dim); }
+
+  /* Section */
+  .section { margin-bottom: 28px; }
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #a5b4fc;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .icon { font-size: 18px; }
+
+  /* Stock grid */
+  .stock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .stock-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s, transform 0.15s;
+    cursor: default;
+  }
+  .stock-card:hover {
+    border-color: #334155;
+    transform: translateY(-2px);
+  }
+  .stock-card .name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .stock-card .ticker {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    font-family: monospace;
+  }
+  .stock-card .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .stock-card .price {
+    font-size: 20px;
+    font-weight: 800;
+    font-family: 'SF Mono', 'Consolas', monospace;
+  }
+  .stock-card .change {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .up { color: var(--green); }
+  .up .change { background: rgba(16,185,129,0.12); }
+  .down { color: var(--red); }
+  .down .change { background: rgba(239,68,68,0.12); }
+  .neutral { color: var(--text-dim); }
+
+  /* News Section */
+  .news-list { list-style: none; }
+  .news-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+  }
+  .news-item:hover { border-color: #334155; }
+  .news-item .news-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .news-item .news-summary {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .news-item .news-source {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 6px;
+  }
+
+  /* Insight */
+  .insight-box {
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(59,130,246,0.05));
+    border: 1px solid #1e2948;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 20px;
+  }
+  .insight-box .insight-title {
+    font-size: 12px;
+    color: #818cf8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .insight-box p { font-size: 14px; color: #cbd5e1; line-height: 1.6; }
+
+  /* Loading / no data */
+  .no-data {
+    color: var(--text-dim);
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 11px;
+    color: #475569;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  .footer a { color: #6366f1; text-decoration: none; }
+
+  /* Chart placeholder */
+  .chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .mini-chart {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* HBF 설명 카드 */
+  .hbf-intro {
+    background: linear-gradient(135deg, #1e1b4b, #0f172a);
+    border: 1px solid #312e81;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+  .hbf-intro h3 {
+    color: #a5b4fc;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .hbf-intro p {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+  .hbf-intro .highlight {
+    color: #fbbf24;
+    font-weight: 600;
+  }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.5em; }
+    .chart-row { grid-template-columns: 1fr; }
+    .stock-grid { grid-template-columns: 1fr; }
+    .summary-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="badge">AI SEMICONDUCTOR VALUE CHAIN</div>
+    <h1>HBF 밸류체인 모니터</h1>
+    <p class="subtitle">High Bandwidth Flash — AI의 기억력을 추적하다</p>
+    <p class="update-time">🕐 최종 업데이트: <span id="updateTime">--</span> (KST)</p>
+  </header>
+
+  <!-- HBF 설명 -->
+  <div class="hbf-intro">
+    <h3>💡 HBF(High Bandwidth Flash)란?</h3>
+    <p>
+      GPU 옆에 붙는 <span class="highlight">초대형 NAND 플래시 적층 저장장치</span>로, 
+      HBM이 <span class="highlight">AI의 속도</span>라면 HBF는 <span class="highlight">AI의 기억력</span>입니다. 
+      HBM 대비 <span class="highlight">8~16배</span> 저장 용량을 제공하여 차세대 AI 서버의 핵심 기술로 주목받고 있습니다.
+    </p>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-row" id="summaryRow"></div>
+
+  <!-- Stock Sections -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🏭</span> 메모리 제조사</div>
+    <div class="stock-grid" id="sector-memory"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🔧</span> 패키징 · 적층 장비</div>
+    <div class="stock-grid" id="sector-equipment"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🧪</span> 소재</div>
+    <div class="stock-grid" id="sector-material"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🔬</span> 테스트</div>
+    <div class="stock-grid" id="sector-test"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">📦</span> ETF</div>
+    <div class="stock-grid" id="sector-etf"></div>
+  </div>
+
+  <!-- News -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📰</span> HBF 관련 주요 뉴스</div>
+    <ul class="news-list" id="newsList"></ul>
+  </div>
+
+  <!-- Insight -->
+  <div class="insight-box" id="insightBox">
+    <div class="insight-title">💡 오늘의 인사이트</div>
+    <p id="insightText"></p>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>HBF Value Chain Monitor · Powered by <a href="#">Hermes Agent</a></p>
+    <p style="margin-top:4px">데이터 출처: Yahoo Finance · 뉴스: 웹 검색 기반 · 투자 참고용이며 투자 권유가 아닙니다</p>
+  </footer>
+
+</div>
+
+<script>
+// ===== DATA (populated by daily cron job) =====
+const STOCK_DATA = [
+  { name: "SK하이닉스", ticker: "000660.KS", sector: "memory", price: 2298000, prevClose: 2243000, change: 55000, changePct: 2.45 },
+  { name: "삼성전자", ticker: "005930.KS", sector: "memory", price: 351500, prevClose: 307000, change: 44500, changePct: 14.5 },
+  { name: "한미반도체", ticker: "042700.KS", sector: "equipment", price: 304000, prevClose: 319000, change: -15000, changePct: -4.70 },
+  { name: "피에스케이홀딩스", ticker: "031980.KS", sector: "equipment", price: 64000, prevClose: 120700, change: -56700, changePct: -46.98 },
+  { name: "솔브레인", ticker: "357780.KS", sector: "material", price: 281000, prevClose: 412500, change: -131500, changePct: -31.88 },
+  { name: "티씨케이", ticker: "064760.KS", sector: "material", price: 119900, prevClose: 287000, change: -167100, changePct: -58.22 },
+  { name: "티에프이", ticker: "425420.KS", sector: "test", price: 26250, prevClose: 54200, change: -27950, changePct: -51.57 },
+  { name: "SOL AI반도체소부장", ticker: "473050.KS", sector: "etf", price: 2055, prevClose: 2075, change: -20, changePct: -0.96 }
+];
+
+const NEWS_DATA = [
+  { title: "AI 반도체 시장, HBM 이어 HBF 기술 경쟁 본격화", summary: "글로벌 메모리 업체들이 차세대 AI 메모리인 HBF(High Bandwidth Flash) 개발에 속도를 내고 있습니다. HBM의 뒤를 이을 기술로 주목받으며, SK하이닉스와 삼성전자가 주도권 경쟁 중입니다.", source: "반도체 업계 · 추정" },
+  { title: "HBF 밸류체인 수혜주에 대한 증권가 분석", summary: "국내 증권사들이 HBF 관련 밸류체인 분석 리포트를 발간했습니다. 패키징 장비와 소재 기업들의 수혜가 예상되며, 특히 적층 공정 기술을 보유한 기업들의 성장성이 부각되고 있습니다.", source: "증권업계 · 추정" },
+];
+
+const INSIGHT_TEXT = "AI 반도체 시장이 HBM을 넘어 HBF로 확장되는 과도기입니다. 메모리 대장주(SK하이닉스, 삼성전자)는 견조한 흐름을 보이는 반면, 소부장 중소형주는 높은 변동성을 보이고 있습니다. 밸류체인 전반에 대한 분산 접근이 유효한 시점입니다.";
+
+const UPDATE_TIME = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+
+// ===== RENDER =====
+document.getElementById('updateTime').textContent = UPDATE_TIME;
+
+function formatKRW(n) {
+  if (n >= 1000000) return '₩' + (n/10000).toFixed(1) + '만';
+  if (n >= 10000) return '₩' + (n/10000).toFixed(2) + '만';
+  return '₩' + n.toLocaleString();
+}
+
+function renderStockCard(stock) {
+  const cls = stock.change > 0 ? 'up' : stock.change < 0 ? 'down' : 'neutral';
+  const sign = stock.change > 0 ? '+' : '';
+  return `
+    <div class="stock-card ${cls}">
+      <div class="name">${stock.name}</div>
+      <div class="ticker">${stock.ticker}</div>
+      <div class="price-row">
+        <span class="price">${formatKRW(stock.price)}</span>
+        <span class="change">${sign}${stock.changePct.toFixed(2)}%</span>
+      </div>
+    </div>`;
+}
+
+// Sector rendering
+const sectorMap = {
+  'memory': 'sector-memory',
+  'equipment': 'sector-equipment',
+  'material': 'sector-material',
+  'test': 'sector-test',
+  'etf': 'sector-etf'
+};
+
+STOCK_DATA.forEach(stock => {
+  const el = document.getElementById(sectorMap[stock.sector]);
+  if (el) el.innerHTML += renderStockCard(stock);
+});
+
+// Summary
+const upCount = STOCK_DATA.filter(s => s.change > 0).length;
+const downCount = STOCK_DATA.filter(s => s.change < 0).length;
+const flatCount = STOCK_DATA.filter(s => s.change === 0).length;
+const bestStock = STOCK_DATA.reduce((a, b) => a.changePct > b.changePct ? a : b);
+const worstStock = STOCK_DATA.reduce((a, b) => a.changePct < b.changePct ? a : b);
+
+document.getElementById('summaryRow').innerHTML = `
+  <div class="summary-card">
+    <div class="label">📈 상승</div>
+    <div class="value" style="color:var(--green)">${upCount}</div>
+    <div class="unit">종목</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">📉 하락</div>
+    <div class="value" style="color:var(--red)">${downCount}</div>
+    <div class="unit">종목</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">🏆 최고</div>
+    <div class="value" style="color:var(--green); font-size:18px">${bestStock.name.split(' ')[0]}</div>
+    <div class="unit">${bestStock.changePct > 0 ? '+' : ''}${bestStock.changePct.toFixed(1)}%</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">⚠️ 최저</div>
+    <div class="value" style="color:var(--red); font-size:18px">${worstStock.name.split(' ')[0]}</div>
+    <div class="unit">${worstStock.changePct.toFixed(1)}%</div>
+  </div>
+`;
+
+// News
+const newsEl = document.getElementById('newsList');
+if (NEWS_DATA.length > 0) {
+  NEWS_DATA.forEach(n => {
+    newsEl.innerHTML += `
+      <li class="news-item">
+        <div class="news-title">${n.title}</div>
+        <div class="news-summary">${n.summary}</div>
+        <div class="news-source">📎 ${n.source}</div>
+      </li>`;
+  });
+} else {
+  newsEl.innerHTML = '<div class="no-data">📭 오늘은 HBF 관련 신규 뉴스가 없습니다. AI 반도체 섹터 전반을 모니터링 중입니다.</div>';
+}
+
+// Insight
+document.getElementById('insightText').textContent = INSIGHT_TEXT;
+</script>
+
+</body>
+</html>
