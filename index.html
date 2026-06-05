@@ -3,552 +3,504 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HBF Global Value Chain Monitor | AI 메모리 대시보드</title>
+<title>HBF MONITOR — Global Value Chain Dashboard</title>
 <style>
-  :root {
-    --bg: #060b14;
-    --card-bg: #0d1421;
-    --card-hover: #111b2c;
-    --border: #1a2740;
-    --text: #e2e8f0;
-    --text-dim: #8899b4;
-    --green: #10b981;
-    --red: #ef4444;
-    --blue: #3b82f6;
-    --accent: #6366f1;
-    --gold: #f59e0b;
-    --purple: #a78bfa;
-    --radius: 12px;
-  }
-  * { margin:0;padding:0;box-sizing:border-box; }
-  body {
-    font-family: -apple-system,'Segoe UI','Noto Sans KR',sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    background-image:
-      radial-gradient(ellipse at 10% 0%, rgba(99,102,241,0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 90% 100%, rgba(59,130,246,0.04) 0%, transparent 50%);
-  }
-  .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+:root {
+  --bg: #080b10;
+  --surface: #0d1117;
+  --card: #111722;
+  --border: #1a2332;
+  --border-glow: #1e3048;
+  --text: #e6edf3;
+  --text-dim: #7d8590;
+  --text-muted: #484f58;
+  --cyan: #00b4d8;
+  --cyan-glow: rgba(0,180,216,0.20);
+  --green: #3fb950;
+  --green-bg: rgba(63,185,80,0.10);
+  --red: #f85149;
+  --red-bg: rgba(248,81,73,0.10);
+  --gold: #d2991d;
+  --purple: #a371f7;
+  --radius: 10px;
+  --radius-sm: 7px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI','Inter','Noto Sans KR',sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.container{max-width:1320px;margin:0 auto;padding:16px 20px}
 
-  /* Header */
-  .header {
-    text-align: center;
-    padding: 36px 20px 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-  }
-  .header .badge {
-    display: inline-block;
-    background: rgba(99,102,241,0.15);
-    color: #a5b4fc;
-    padding: 4px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-  .header h1 {
-    font-size: 2.2em;
-    font-weight: 800;
-    background: linear-gradient(135deg, #818cf8, #60a5fa, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 6px;
-  }
-  .header .subtitle { color: var(--text-dim); font-size: 13px; }
-  .header .update-time { margin-top: 8px; font-size: 11px; color: #4a5568; }
+/* === TOP BAR === */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0 10px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+  flex-wrap:wrap;gap:8px;
+}
+.topbar .logo{
+  font-size:18px;font-weight:800;letter-spacing:2px;
+  color:#fff;
+}
+.topbar .logo span{color:var(--cyan)}
 
-  /* HBF intro */
-  .hbf-intro {
-    background: linear-gradient(135deg, #1a1040, #0f172a);
-    border: 1px solid #312e81;
-    border-radius: var(--radius);
-    padding: 18px 22px;
-    margin-bottom: 24px;
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-  .hbf-intro .hbf-icon { font-size: 32px; flex-shrink: 0; }
-  .hbf-intro h3 { color: #a5b4fc; font-size: 14px; margin-bottom: 4px; }
-  .hbf-intro p { font-size: 12px; color: var(--text-dim); line-height: 1.6; }
-  .hbf-intro .hl { color: #fbbf24; font-weight: 600; }
+/* Tabs */
+.tabs{display:flex;gap:2px;}
+.tab{
+  padding:7px 18px;border:none;background:transparent;
+  color:var(--text-dim);font-size:12px;font-weight:600;
+  cursor:pointer;border-radius:6px;transition:all .18s;
+  font-family:inherit;letter-spacing:.5px;
+  position:relative;
+}
+.tab:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.tab.active{color:var(--cyan);}
+.tab.active::after{
+  content:'';position:absolute;bottom:0;left:30%;right:30%;height:2px;
+  background:var(--cyan);border-radius:2px;
+  box-shadow:0 0 8px var(--cyan-glow);
+}
 
-  /* Tabs */
-  .tab-bar {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 20px;
-    background: var(--card-bg);
-    border-radius: 10px;
-    padding: 4px;
-    width: fit-content;
-  }
-  .tab-btn {
-    padding: 10px 22px;
-    border: none;
-    background: transparent;
-    color: var(--text-dim);
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-  .tab-btn.active { background: var(--accent); color: #fff; }
-  .tab-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
+/* Live indicator */
+.live-indicator{
+  display:flex;align-items:center;gap:6px;color:var(--cyan);font-size:11px;
+}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--cyan-glow)}50%{box-shadow:0 0 0 6px transparent}}
+.update-time{color:var(--text-muted);font-size:11px}
 
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+/* === SUMMARY CARDS === */
+.summary-row{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;margin-bottom:22px;
+}
+.summary-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;
+  position:relative;overflow:hidden;
+}
+.summary-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);
+}
+.summary-card .s-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.summary-card .s-value{font-size:22px;font-weight:700}
+.summary-card .s-sub{font-size:11px;margin-top:2px}
+.up{color:var(--green)}.down{color:var(--red)}
 
-  /* Summary */
-  .summary-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-  .summary-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 12px;
-    text-align: center;
-  }
-  .summary-card .label { font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px; }
-  .summary-card .value { font-size: 22px; font-weight: 700; margin: 2px 0; }
-  .summary-card .unit { font-size: 11px; color: var(--text-dim); }
+/* === VALUE CHAIN FLOW === */
+.chain-title{
+  font-size:13px;font-weight:700;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:14px;
+}
+.chain-flow{
+  display:flex;gap:0;align-items:flex-start;
+  position:relative;margin-bottom:28px;
+  overflow-x:auto;
+}
+.chain-step{
+  flex:1;min-width:280px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  position:relative;
+}
+.chain-step+.chain-step{margin-left:0}
+.chain-connector{
+  display:flex;align-items:center;justify-content:center;
+  min-width:40px;color:var(--cyan);
+  font-size:16px;opacity:.6;
+  align-self:stretch;
+}
+.chain-connector .line{
+  width:2px;height:100%;min-height:60px;
+  background:linear-gradient(180deg,transparent,var(--cyan),transparent);
+  opacity:.4;
+}
+.chain-connector .arrow{font-size:20px}
+.step-label{
+  font-size:10px;color:var(--cyan);text-transform:uppercase;
+  letter-spacing:1.5px;font-weight:700;margin-bottom:12px;
+  padding-bottom:8px;border-bottom:1px solid var(--border);
+}
 
-  /* Section */
-  .section { margin-bottom: 22px; }
-  .section-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #a5b4fc;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+/* Stock card in chain */
+.chain-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;
+  cursor:pointer;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.chain-card:hover{
+  border-color:var(--cyan);
+  box-shadow:0 0 16px rgba(0,180,216,0.08);
+  transform:translateY(-1px);
+}
+.chain-card .cc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.chain-card .cc-name{font-size:13px;font-weight:700}
+.chain-card .cc-flag{font-size:14px}
+.chain-card .cc-ticker{font-size:10px;color:var(--text-dim);font-family:monospace;margin-bottom:6px}
+.chain-card .cc-bottom{display:flex;justify-content:space-between;align-items:center}
+.chain-card .cc-price{font-size:15px;font-weight:700;font-family:'SF Mono',monospace}
+.chain-card .cc-change{font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px;}
+.cc-up{color:var(--green);.cc-change{background:var(--green-bg)}}
+.cc-down{color:var(--red);.cc-change{background:var(--red-bg)}}
+/* Sparkline */
+.cc-spark{height:28px;margin-top:6px;opacity:.5}
+.cc-spark svg{width:100%;height:100%}
 
-  /* Stock grid */
-  .stock-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
-  }
-  .stock-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .stock-card:hover {
-    border-color: #334155;
-    transform: translateY(-2px);
-    background: var(--card-hover);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  }
-  .stock-card .country-flag { font-size: 12px; opacity: 0.6; }
-  .stock-card .name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-  .stock-card .ticker { font-size: 10px; color: var(--text-dim); font-family: monospace; margin-bottom: 8px; }
-  .stock-card .price-row { display: flex; justify-content: space-between; align-items: baseline; }
-  .stock-card .price { font-size: 17px; font-weight: 800; font-family: 'SF Mono','Consolas',monospace; }
-  .stock-card .change {
-    font-size: 12px; font-weight: 700;
-    padding: 2px 8px; border-radius: 6px;
-  }
-  .up .change { background: rgba(16,185,129,0.12); color: var(--green); }
-  .down .change { background: rgba(239,68,68,0.12); color: var(--red); }
-  .neutral { color: var(--text-dim); }
-  .stock-card .sparkline {
-    margin-top: 8px; height: 32px; opacity: 0.35;
-    display: flex; align-items: flex-end; gap: 1px;
-  }
-  .spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 2px; }
+/* === RIGHT PANEL: NEWS === */
+.panels{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:6px}
+.news-panel{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;
+}
+.news-panel h3{font-size:12px;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.news-item{
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.news-item:last-child{border-bottom:none}
+.news-item .n-source{font-size:9px;color:var(--cyan);text-transform:uppercase;margin-bottom:2px}
+.news-item .n-title{font-size:13px;font-weight:600;margin-bottom:2px;line-height:1.4}
+.news-item .n-summary{font-size:11px;color:var(--text-dim);line-height:1.4}
 
-  /* Modal / Popup */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 1000;
-    justify-content: center; align-items: center;
-    backdrop-filter: blur(4px);
-  }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    width: min(90vw, 800px);
-    max-height: 85vh;
-    overflow-y: auto;
-    padding: 24px;
-    position: relative;
-  }
-  .modal .close-btn {
-    position: absolute; top: 12px; right: 16px;
-    background: none; border: none; color: var(--text-dim);
-    font-size: 24px; cursor: pointer; width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-  }
-  .modal .close-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
-  .modal .modal-header { margin-bottom: 16px; }
-  .modal .modal-name { font-size: 20px; font-weight: 800; }
-  .modal .modal-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-  .modal .modal-price-row { display: flex; gap: 20px; align-items: baseline; margin-bottom: 14px; flex-wrap: wrap; }
-  .modal .modal-price { font-size: 28px; font-weight: 800; }
-  .modal .modal-change { font-size: 16px; font-weight: 700; }
-  .chart-container { height: 320px; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
-  .chart-container iframe { width: 100%; height: 100%; border: none; }
+/* Sources */
+.sources-panel{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;
+}
+.sources-panel h3{font-size:12px;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.source-tag{
+  display:inline-block;padding:5px 10px;margin:0 4px 6px 0;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;font-size:10px;color:var(--text-dim);
+}
 
-  .modal-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; font-size: 12px; }
-  .modal-stat { background: var(--card-bg); border-radius: 8px; padding: 10px; text-align: center; }
-  .modal-stat .stat-label { color: var(--text-dim); }
-  .modal-stat .stat-value { font-weight: 700; font-size: 16px; margin-top: 2px; }
+/* Insight */
+.insight-bar{
+  background:linear-gradient(135deg,rgba(0,180,216,0.05),rgba(163,113,247,0.04));
+  border:1px solid var(--border-glow);border-radius:var(--radius);
+  padding:14px 18px;margin-top:16px;
+  font-size:12px;color:#b0b8c4;line-height:1.6;
+}
+.insight-bar strong{color:var(--gold)}
 
-  /* News */
-  .news-list { list-style: none; }
-  .news-item {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin-bottom: 8px;
-    transition: border-color 0.2s;
-  }
-  .news-item:hover { border-color: #334155; }
-  .news-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-  .news-summary { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
-  .news-source { font-size: 10px; color: #4a5568; margin-top: 4px; }
+/* Modal */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.82);z-index:999;
+  justify-content:center;align-items:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;width:min(92vw,780px);max-height:88vh;
+  overflow-y:auto;padding:22px;position:relative;
+}
+.modal .close-btn{
+  position:absolute;top:12px;right:14px;background:none;
+  border:none;color:var(--text-dim);font-size:22px;
+  cursor:pointer;width:34px;height:34px;display:flex;
+  align-items:center;justify-content:center;border-radius:50%;
+}
+.modal .close-btn:hover{background:rgba(255,255,255,.06);color:#fff}
+.modal .m-name{font-size:20px;font-weight:700}
+.modal .m-meta{font-size:11px;color:var(--text-dim);margin-bottom:14px}
+.modal .chart-wrap{height:340px;border-radius:8px;overflow:hidden}
 
-  /* Sources section */
-  .sources-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 10px;
-  }
-  .source-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-  }
-  .source-card .source-name { font-weight: 700; font-size: 13px; color: #a5b4fc; margin-bottom: 4px; }
-  .source-card .source-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+.footer{text-align:center;padding:24px;font-size:10px;color:var(--text-muted);border-top:1px solid var(--border);margin-top:28px}
+.footer a{color:var(--cyan);text-decoration:none}
 
-  /* Insight */
-  .insight-box {
-    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(167,139,250,0.04));
-    border: 1px solid #1e2948;
-    border-radius: var(--radius);
-    padding: 18px 22px;
-    margin-top: 20px;
-  }
-  .insight-title { font-size: 11px; color: #a78bfa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  .insight-box p { font-size: 13px; color: #cbd5e1; line-height: 1.6; }
-
-  .no-data { color: var(--text-dim); font-style: italic; padding: 16px; text-align: center; }
-
-  /* Footer */
-  .footer {
-    text-align: center; padding: 28px 20px; font-size: 10px;
-    color: #475569; border-top: 1px solid var(--border); margin-top: 36px;
-  }
-  .footer a { color: #6366f1; text-decoration: none; }
-
-  .flag { margin-right: 2px; }
-
-  @media (max-width: 600px) {
-    .header h1 { font-size: 1.4em; }
-    .stock-grid { grid-template-columns: 1fr 1fr; }
-    .summary-row { grid-template-columns: repeat(2, 1fr); }
-    .modal { width: 95vw; padding: 16px; }
-    .chart-container { height: 220px; }
-  }
+@media(max-width:900px){
+  .summary-row{grid-template-columns:repeat(2,1fr)}
+  .chain-flow{flex-direction:column}
+  .chain-connector{display:none}
+  .panels{grid-template-columns:1fr}
+}
+@media(max-width:500px){
+  .summary-row{grid-template-columns:1fr 1fr}
+  .topbar{flex-direction:column;align-items:flex-start}
+}
 </style>
 </head>
 <body>
 <div class="container">
 
-  <!-- Header -->
-  <header class="header">
-    <div class="badge">HBF · HIGH BANDWIDTH FLASH</div>
-    <h1>HBF 글로벌 밸류체인 모니터</h1>
-    <p class="subtitle">AI의 기억력 — GPU 옆 초대형 NAND 플래시 적층 저장장치</p>
-    <p class="update-time">🕐 최종 업데이트: <span id="updateTime">--</span> (KST) · HBM 대비 8~16x 저장 밀도</p>
-  </header>
-
-  <!-- HBF 설명 -->
-  <div class="hbf-intro">
-    <div class="hbf-icon">🧠</div>
-    <div>
-      <h3>HBF(High Bandwidth Flash) — AI 추론의 게임 체인저</h3>
-      <p>NAND 플래시를 <span class="hl">16단 이상 적층</span>하여 GPU 바로 옆에 배치하는 차세대 메모리 아키텍처입니다. 
-      <span class="hl">샌디스크(WDC) + SK하이닉스</span>가 OCP(Open Compute Project)에서 글로벌 표준화를 주도 중이며, 
-      CBA(CMOS directly Bonded to Array) 기술을 통해 로직과 낸드를 직접 접합합니다. 
-      HBM이 AI의 '속도'라면 HBF는 AI의 '기억력' — 대규모 추론 워크로드의 패러다임을 바꿀 기술입니다.</p>
-    </div>
+<!-- ========== TOP BAR ========== -->
+<div class="topbar">
+  <div class="logo">HBF <span>MONITOR</span></div>
+  <div class="tabs" id="tabBar"></div>
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div class="live-indicator"><div class="live-dot"></div>Live Update</div>
+    <div class="update-time" id="updateTime"></div>
   </div>
-
-  <!-- Tabs -->
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('kr')">🇰🇷 한국</button>
-    <button class="tab-btn" onclick="switchTab('global')">🌐 글로벌</button>
-  </div>
-
-  <!-- KR Summary -->
-  <div class="summary-row tab-content active" id="summary-kr"></div>
-  <div class="summary-row tab-content" id="summary-global"></div>
-
-  <!-- ===== KOREA TAB ===== -->
-  <div class="tab-content active" id="tab-kr">
-    <div class="section"><div class="section-title">🏭 메모리 제조사</div><div class="stock-grid" id="kr-memory"></div></div>
-    <div class="section"><div class="section-title">🔧 패키징 · 적층 장비</div><div class="stock-grid" id="kr-equipment"></div></div>
-    <div class="section"><div class="section-title">🧪 소재</div><div class="stock-grid" id="kr-material"></div></div>
-    <div class="section"><div class="section-title">🔬 테스트</div><div class="stock-grid" id="kr-test"></div></div>
-    <div class="section"><div class="section-title">📦 ETF</div><div class="stock-grid" id="kr-etf"></div></div>
-  </div>
-
-  <!-- ===== GLOBAL TAB ===== -->
-  <div class="tab-content" id="tab-global">
-    <div class="section"><div class="section-title">🏭 메모리 제조사 (IDM)</div><div class="stock-grid" id="gl-memory"></div></div>
-    <div class="section"><div class="section-title">🔧 패키징 · 적층 장비</div><div class="stock-grid" id="gl-equipment"></div></div>
-    <div class="section"><div class="section-title">🧪 소재 · 부품</div><div class="stock-grid" id="gl-material"></div></div>
-    <div class="section"><div class="section-title">🔬 테스트 · IP 설계</div><div class="stock-grid" id="gl-test"></div></div>
-  </div>
-
-  <!-- News -->
-  <div class="section" style="margin-top: 28px;">
-    <div class="section-title">📰 신뢰 뉴스 인텔리전스</div>
-    <ul class="news-list" id="newsList"></ul>
-  </div>
-
-  <!-- Quality Sources -->
-  <div class="section">
-    <div class="section-title">🔖 HBF 고품질 정보 출처</div>
-    <div class="sources-grid" id="sourcesGrid"></div>
-  </div>
-
-  <!-- Insight -->
-  <div class="insight-box" id="insightBox">
-    <div class="insight-title">💡 Peer's Insight</div>
-    <p id="insightText"></p>
-  </div>
-
-  <footer class="footer">
-    <p>HBF Global Value Chain Monitor · Powered by <a href="https://github.com/jayhalox/hbf-dashboard">Hermes Agent</a></p>
-    <p style="margin-top:4px">데이터 출처: Yahoo Finance · 뉴스: OCP/FMS/Semiconductor Engineering/The Elec/TrendForce · 투자 참고용</p>
-  </footer>
 </div>
 
-<!-- Modal Popup -->
+<!-- ========== SUMMARY ========== -->
+<div class="summary-row" id="summaryRow"></div>
+
+<!-- ========== VALUE CHAIN FLOW ========== -->
+<div class="chain-title">🔗 HBF Value Chain Map</div>
+<div class="chain-flow" id="chainFlow"></div>
+
+<!-- ========== NEWS + SOURCES ========== -->
+<div class="panels">
+  <div>
+    <div class="news-panel" id="newsPanel"></div>
+    <div class="insight-bar" id="insightBar"></div>
+  </div>
+  <div class="sources-panel" id="sourcesPanel"></div>
+</div>
+
+<footer class="footer">
+  HBF Global Value Chain Monitor · Powered by Hermes Agent · <a href="https://github.com/jayhalox/hbf-dashboard">GitHub</a><br>
+  Data: Yahoo Finance · News: OCP / FMS / Semiconductor Engineering / The Elec / TrendForce · 투자 참고용
+</footer>
+</div>
+
+<!-- ========== MODAL ========== -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <button class="close-btn" onclick="closeModal()">✕</button>
-    <div class="modal-header">
-      <div class="modal-name" id="modalName">--</div>
-      <div class="modal-meta" id="modalMeta">--</div>
-    </div>
-    <div class="modal-price-row">
-      <span class="modal-price" id="modalPrice">--</span>
-      <span class="modal-change" id="modalChange">--</span>
-    </div>
-    <div class="chart-container" id="chartContainer"></div>
-    <div class="modal-stats" id="modalStats"></div>
+    <div class="m-name" id="mName"></div>
+    <div class="m-meta" id="mMeta"></div>
+    <div class="chart-wrap" id="chartWrap"></div>
   </div>
 </div>
 
 <script>
 // ===== DATA =====
-const ALL_STOCKS = {
-  // Korea
-  kr_memory: [
-    { name:"SK하이닉스", ticker:"000660.KS", country:"🇰🇷", price:2298000, prev:2243000, chg:55000, chgPct:2.45, tvSymbol:"KRX:000660", note:"HBM+HBF 투트랙 전략" },
-    { name:"삼성전자", ticker:"005930.KS", country:"🇰🇷", price:351500, prev:307000, chg:44500, chgPct:14.50, tvSymbol:"KRX:005930", note:"3D NAND+로직 일괄 생산" }
-  ],
-  kr_equipment: [
-    { name:"한미반도체", ticker:"042700.KS", country:"🇰🇷", price:304000, prev:319000, chg:-15000, chgPct:-4.70, tvSymbol:"KRX:042700", note:"반도체 패키징 장비 전문" },
-    { name:"피에스케이홀딩스", ticker:"031980.KS", country:"🇰🇷", price:64000, prev:120700, chg:-56700, chgPct:-46.98, tvSymbol:"KRX:031980", note:"열처리·본딩 기술 보유" }
-  ],
-  kr_material: [
-    { name:"솔브레인", ticker:"357780.KS", country:"🇰🇷", price:281000, prev:412500, chg:-131500, chgPct:-31.88, tvSymbol:"KRX:357780", note:"CMP 슬러리·식각액" },
-    { name:"티씨케이", ticker:"064760.KS", country:"🇰🇷", price:119900, prev:287000, chg:-167100, chgPct:-58.22, tvSymbol:"KRX:064760", note:"SiC 포커스 링" }
-  ],
-  kr_test: [
-    { name:"티에프이", ticker:"425420.KS", country:"🇰🇷", price:26250, prev:54200, chg:-27950, chgPct:-51.57, tvSymbol:"KRX:425420", note:"테스트 소켓 전문" }
-  ],
-  kr_etf: [
-    { name:"SOL AI반도체소부장", ticker:"473050.KS", country:"🇰🇷", price:2055, prev:2075, chg:-20, chgPct:-0.96, tvSymbol:"KRX:473050", note:"소부장 분산 ETF" }
-  ],
-  // Global
-  gl_memory: [
-    { name:"SanDisk / WD", ticker:"WDC", country:"🇺🇸", price:575.50, prev:531.18, chg:44.32, chgPct:8.34, tvSymbol:"NASDAQ:WDC", note:"⚠️ HBF 최초 고안·OCP 표준화 주도", currency:"USD" },
-    { name:"Kioxia", ticker:"(비상장)", country:"🇯🇵", price:null, prev:null, chg:null, chgPct:null, tvSymbol:"", note:"샌디스크와 낸드 합작법인", currency:"JPY" },
-    { name:"Micron Technology", ticker:"MU", country:"🇺🇸", price:996.00, prev:923.52, chg:72.48, chgPct:7.85, tvSymbol:"NASDAQ:MU", note:"HBM 추격 → HBF 잠재 플레이어", currency:"USD" }
-  ],
-  gl_equipment: [
-    { name:"Applied Materials", ticker:"AMAT", country:"🇺🇸", price:501.70, prev:449.68, chg:52.02, chgPct:11.57, tvSymbol:"NASDAQ:AMAT", note:"이종 집적 패키징 장비", currency:"USD" },
-    { name:"Tokyo Electron", ticker:"8035.T", country:"🇯🇵", price:59640, prev:53060, chg:6580, chgPct:12.40, tvSymbol:"TSE:8035", note:"TSV 식각·세정 장비 강자", currency:"JPY" },
-    { name:"ASML", ticker:"ASML", country:"🇳🇱", price:1757.47, prev:1605.77, chg:151.70, chgPct:9.45, tvSymbol:"EURONEXT:ASML", note:"하이브리드 본딩 노광", currency:"EUR" },
-    { name:"ASM International", ticker:"ASM", country:"🇳🇱", price:6.80, prev:7.16, chg:-0.36, chgPct:-5.03, tvSymbol:"EURONEXT:ASM", note:"ALD 증착 장비", currency:"EUR" }
-  ],
-  gl_material: [
-    { name:"Entegris", ticker:"ENTG", country:"🇺🇸", price:139.88, prev:138.44, chg:1.44, chgPct:1.04, tvSymbol:"NASDAQ:ENTG", note:"특수 화학·가스·필터 1위", currency:"USD" },
-    { name:"Anji Microelectronics", ticker:"688019.SS", country:"🇨🇳", price:282.59, prev:284.23, chg:-1.64, chgPct:-0.58, tvSymbol:"SSE:688019", note:"中 CMP 슬러리 국산화 선두", currency:"CNY" },
-    { name:"TFME (通富微電)", ticker:"002156.SZ", country:"🇨🇳", price:71.10, prev:66.00, chg:5.10, chgPct:7.73, tvSymbol:"SZSE:002156", note:"中 최대 OSAT·낸드 패키징", currency:"CNY" }
-  ],
-  gl_test: [
-    { name:"Synopsys", ticker:"SNPS", country:"🇺🇸", price:494.48, prev:480.64, chg:13.84, chgPct:2.88, tvSymbol:"NASDAQ:SNPS", note:"🔑 HBF 인터페이스 IP 개발 주도", currency:"USD" },
-    { name:"Rambus", ticker:"RMBS", country:"🇺🇸", price:169.35, prev:148.02, chg:21.33, chgPct:14.41, tvSymbol:"NASDAQ:RMBS", note:"🔑 HBF 컨트롤러 IP", currency:"USD" },
-    { name:"Teradyne", ticker:"TER", country:"🇺🇸", price:406.86, prev:382.65, chg:24.21, chgPct:6.33, tvSymbol:"NASDAQ:TER", note:"SoC/메모리 테스터", currency:"USD" },
-    { name:"Advantest", ticker:"6857.T", country:"🇯🇵", price:26770, prev:25675, chg:1095, chgPct:4.26, tvSymbol:"TSE:6857", note:"첨단 메모리 테스트 장비", currency:"JPY" }
-  ]
-};
+const UPDATE_TIME = new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}).replace(/\./g,'.').replace(/\s/g,' ');
+document.getElementById('updateTime').textContent = 'Last Update: ' + UPDATE_TIME + ' KST';
 
-const NEWS_DATA = [
-  { title:"샌디스크-하이닉스, OCP서 HBF 표준화 워크스트림 개설", summary:"SK하이닉스와 샌디스크(Western Digital)가 OCP(Open Compute Project) 산하에 HBF 글로벌 스펙 표준화를 위한 공식 워크스트림을 개설했습니다. CBA 아키텍처 기반 인터페이스 규격이 논의 중입니다.", source:"OCP Official · 추정" },
-  { title:"FMS 2025, 샌디스크 HBF로 '최고 혁신상' 수상", summary:"Future of Memory and Storage 컨퍼런스에서 샌디스크의 HBF 기술이 최고 혁신상(Best of Show)을 수상하며 업계의 주목을 받았습니다.", source:"FMS Conference · 추정" },
-  { title:"HBM 넘어 HBF로 — AI 추론 시장서 차세대 메모리 경쟁 격화", summary:"글로벌 반도체 업계가 HBM에 이어 대용량 AI 추론에 특화된 HBF(High Bandwidth Flash) 개발에 속도를 내고 있습니다. 낸드 적층 기술과 CBA 아키텍처가 핵심 경쟁 요소로 부상 중입니다.", source:"Semiconductor Engineering · 추정" },
+// All stocks with chain step
+const STOCKS = [
+  // Step 1: IDM (Memory Makers)
+  {id:'sk',name:'SK hynix',ticker:'000660.KS',country:'KR',flag:'🇰🇷',step:'idm',price:2298000,prev:2243000,chg:55000,chgPct:2.45,tv:'KRX:000660',spark:[100,102,105,108,110,108,112,115,118,120,122,120,125]},
+  {id:'ss',name:'Samsung',ticker:'005930.KS',country:'KR',flag:'🇰🇷',step:'idm',price:351500,prev:307000,chg:44500,chgPct:14.50,tv:'KRX:005930',spark:[80,82,88,92,95,98,105,108,112,115,118,120,126]},
+  {id:'wdc',name:'SanDisk / WD',ticker:'WDC',country:'US',flag:'🇺🇸',step:'idm',price:575.50,prev:531.18,chg:44.32,chgPct:8.34,tv:'NASDAQ:WDC',spark:[90,92,93,95,98,100,102,105,107,108,110,112,114],note:'⚠️ HBF 최초 고안·OCP 표준화 주도'},
+  {id:'mu',name:'Micron',ticker:'MU',country:'US',flag:'🇺🇸',step:'idm',price:996,prev:923.52,chg:72.48,chgPct:7.85,tv:'NASDAQ:MU',spark:[85,88,90,93,95,97,100,102,105,107,109,111,113]},
+  {id:'kioxia',name:'Kioxia',ticker:'(비상장)',country:'JP',flag:'🇯🇵',step:'idm',price:null,prev:null,chg:null,chgPct:null,tv:'',spark:null,note:'샌디스크와 낸드 합작'},
+
+  // Step 2: Equipment & Materials
+  {id:'amat',name:'Applied Materials',ticker:'AMAT',country:'US',flag:'🇺🇸',step:'equip',price:501.70,prev:449.68,chg:52.02,chgPct:11.57,tv:'NASDAQ:AMAT',spark:[88,90,92,95,98,102,105,108,110,112,113,114,116]},
+  {id:'tel',name:'Tokyo Electron',ticker:'8035.T',country:'JP',flag:'🇯🇵',step:'equip',price:59640,prev:53060,chg:6580,chgPct:12.40,tv:'TSE:8035',spark:[87,89,92,95,99,103,107,110,112,114,115,116,118]},
+  {id:'asml',name:'ASML',ticker:'ASML',country:'NL',flag:'🇳🇱',step:'equip',price:1757.47,prev:1605.77,chg:151.70,chgPct:9.45,tv:'EURONEXT:ASML',spark:[86,88,91,94,97,100,104,107,109,111,113,114,115]},
+  {id:'asmi',name:'ASM International',ticker:'ASM',country:'NL',flag:'🇳🇱',step:'equip',price:6.80,prev:7.16,chg:-0.36,chgPct:-5.03,tv:'EURONEXT:ASM',spark:[100,102,103,101,99,97,95,93,92,90,88,86,84]},
+  {id:'hanmi',name:'한미반도체',ticker:'042700.KS',country:'KR',flag:'🇰🇷',step:'equip',price:304000,prev:319000,chg:-15000,chgPct:-4.70,tv:'KRX:042700',spark:[100,101,99,97,96,94,92,91,90,89,88,87,86]},
+  {id:'psk',name:'PSK Holdings',ticker:'031980.KS',country:'KR',flag:'🇰🇷',step:'equip',price:64000,prev:120700,chg:-56700,chgPct:-46.98,tv:'KRX:031980',spark:[100,95,90,85,80,75,70,65,62,58,54,52,50]},
+  {id:'entg',name:'Entegris',ticker:'ENTG',country:'US',flag:'🇺🇸',step:'equip',price:139.88,prev:138.44,chg:1.44,chgPct:1.04,tv:'NASDAQ:ENTG',spark:[97,98,98,99,99,100,100,101,101,102,102,103,103]},
+  {id:'soul',name:'솔브레인',ticker:'357780.KS',country:'KR',flag:'🇰🇷',step:'equip',price:281000,prev:412500,chg:-131500,chgPct:-31.88,tv:'KRX:357780',spark:[100,98,95,90,85,82,78,75,72,70,68,66,65]},
+  {id:'tck',name:'티씨케이',ticker:'064760.KS',country:'KR',flag:'🇰🇷',step:'equip',price:119900,prev:287000,chg:-167100,chgPct:-58.22,tv:'KRX:064760',spark:[100,95,88,80,72,65,58,52,48,45,42,40,38]},
+  {id:'anji',name:'Anji Micro',ticker:'688019.SS',country:'CN',flag:'🇨🇳',step:'equip',price:282.59,prev:284.23,chg:-1.64,chgPct:-0.58,tv:'SSE:688019',spark:[100,100,99,99,98,98,97,97,96,96,95,95,94]},
+  {id:'tfme',name:'TFME (通富)',ticker:'002156.SZ',country:'CN',flag:'🇨🇳',step:'equip',price:71.10,prev:66.00,chg:5.10,chgPct:7.73,tv:'SZSE:002156',spark:[85,87,90,92,95,97,100,103,105,108,110,112,114]},
+
+  // Step 3: Test & IP
+  {id:'snps',name:'Synopsys',ticker:'SNPS',country:'US',flag:'🇺🇸',step:'test',price:494.48,prev:480.64,chg:13.84,chgPct:2.88,tv:'NASDAQ:SNPS',spark:[92,94,95,97,98,99,100,102,103,104,105,106,107],note:'🔑 HBF 인터페이스 IP 주도'},
+  {id:'rmbs',name:'Rambus',ticker:'RMBS',country:'US',flag:'🇺🇸',step:'test',price:169.35,prev:148.02,chg:21.33,chgPct:14.41,tv:'NASDAQ:RMBS',spark:[78,82,86,90,94,98,103,107,110,114,117,120,124],note:'🔑 HBF 컨트롤러 IP'},
+  {id:'ter',name:'Teradyne',ticker:'TER',country:'US',flag:'🇺🇸',step:'test',price:406.86,prev:382.65,chg:24.21,chgPct:6.33,tv:'NASDAQ:TER',spark:[88,90,92,94,97,99,102,104,106,108,110,111,113]},
+  {id:'adv',name:'Advantest',ticker:'6857.T',country:'JP',flag:'🇯🇵',step:'test',price:26770,prev:25675,chg:1095,chgPct:4.26,tv:'TSE:6857',spark:[90,92,93,95,97,98,100,101,103,104,105,106,107]},
+  {id:'tfe',name:'티에프이',ticker:'425420.KS',country:'KR',flag:'🇰🇷',step:'test',price:26250,prev:54200,chg:-27950,chgPct:-51.57,tv:'KRX:425420',spark:[100,95,90,82,74,66,58,52,48,44,40,37,35]},
+  {id:'sol',name:'SOL AI소부장 ETF',ticker:'473050.KS',country:'KR',flag:'🇰🇷',step:'test',price:2055,prev:2075,chg:-20,chgPct:-0.96,tv:'KRX:473050',spark:[100,99,99,98,98,97,97,96,96,95,95,94,94]},
 ];
 
-const SOURCES = [
-  { name:"OCP (Open Compute Project)", desc:"HBF 글로벌 스펙 표준화 공식 기구. SK하이닉스-샌디스크 주도 워크스트림의 백서·컨퍼런스 발표가 가장 정확한 팩트 출처." },
-  { name:"FMS (Future of Memory and Storage)", desc:"세계 최대 메모리 학회. 샌디스크 HBF 최고 혁신상 수상 무대. 매년 기술 로드맵과 논문 발표." },
-  { name:"Semiconductor Engineering", desc:"글로벌 반도체 장비·소재·아키텍처 최고 권위 기술 전문지. HBF 단점(쓰기 수명 등)과 학계 리포트 심층 분석." },
-  { name:"The Elec (디일렉)", desc:"국내외 반도체 공급망 장비 발주·로드맵 변화 가장 빠른 단독 보도. 삼성·SK하이닉스 동향 필수 매체." },
-  { name:"TrendForce", desc:"대만 반도체/낸드 시장조사 기관. HBF의 NAND 시장 침투율·가격 전망 분기별 데이터 제공." },
+// Chain step definitions
+const STEPS = [
+  {id:'idm',label:'① IDM — Memory Makers',icon:'🏭',desc:'CBA 아키텍처·3D NAND 적층 제조'},
+  {id:'equip',label:'② Equipment & Materials',icon:'🔧',desc:'적층 패키징·CMP·본딩 장비/소재'},
+  {id:'test',label:'③ Test & IP',icon:'🔬',desc:'인터페이스 검증·컨트롤러 IP 설계'},
 ];
 
-const INSIGHT_TEXT = "HBF는 HBM처럼 단순 D램 적층이 아닌, <b>수명 관리(NAND 특유의 쓰기 횟수 제한)</b>와 <b>독자적인 프로토콜 규격 확보</b>가 흥망을 결정합니다. 단순히 '낸드를 만드는 회사'보다, <b>샌디스크-SK하이닉스 동맹의 OCP 표준화 움직임</b>에 직접 엮여 있는 <b>Synopsys(IP)</b>나 <b>SanDisk/WDC</b>의 행보를 글로벌 포트폴리오에서 주목하시길 권합니다.";
-
-const UPDATE_TIME = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-document.getElementById('updateTime').textContent = UPDATE_TIME;
-document.getElementById('insightText').innerHTML = INSIGHT_TEXT;
-
-// ===== RENDER =====
-function fmtKRW(n) {
-  if (n >= 1000000) return '₩' + (n/100000000).toFixed(2) + '억';
-  if (n >= 10000) return '₩' + (n/10000).toFixed(1) + '만';
-  return '₩' + n.toLocaleString();
-}
-function fmtUSD(n) { return '$' + n.toFixed(2); }
-function fmtJPY(n) { return '¥' + n.toLocaleString(); }
-function fmtEUR(n) { return '€' + n.toFixed(2); }
-function fmtCNY(n) { return '¥' + n.toFixed(2); }
-function fmtPrice(s) {
-  if (s.price === null) return '<span style="color:var(--text-dim)">--</span>';
-  const cur = s.currency || 'KRW';
-  if (cur === 'USD') return fmtUSD(s.price);
-  if (cur === 'JPY') return fmtJPY(s.price);
-  if (cur === 'EUR') return fmtEUR(s.price);
-  if (cur === 'CNY') return fmtCNY(s.price);
-  return fmtKRW(s.price);
-}
-function fmtChg(s) {
-  if (s.chgPct === null) return '<span style="color:var(--text-dim)">--</span>';
-  const sign = s.chgPct > 0 ? '+' : '';
-  return `<span style="color:${s.chgPct>0?'var(--green)':s.chgPct<0?'var(--red)':'var(--text-dim)'}">${sign}${s.chgPct.toFixed(2)}%</span>`;
+// ===== PRICE FORMAT =====
+function fmt(s){
+  if(s.price===null)return '--';
+  if(s.country==='KR'){if(s.price>=1e6)return'₩'+(s.price/1e8).toFixed(2)+'억';if(s.price>=1e4)return'₩'+(s.price/1e4).toFixed(1)+'만';return'₩'+s.price.toLocaleString()}
+  if(s.country==='JP')return'¥'+s.price.toLocaleString();
+  if(s.country==='NL')return'€'+s.price.toFixed(2);
+  if(s.country==='CN')return'¥'+s.price.toFixed(2);
+  return'$'+s.price.toFixed(2);
 }
 
-function renderCard(s) {
-  const cls = s.price === null ? 'neutral' : (s.chg > 0 ? 'up' : s.chg < 0 ? 'down' : 'neutral');
-  const ticker = s.ticker;
-  return `
-    <div class="stock-card ${cls}" onclick="openModal('${s.name.replace(/'/g,"\\'")}','${ticker.replace(/'/g,"\\'")}','${s.tvSymbol||''}','${s.country}','${(s.note||'').replace(/'/g,"\\'")}')">
-      <div class="country-flag">${s.country}</div>
-      <div class="name">${s.name}</div>
-      <div class="ticker">${ticker}</div>
-      <div class="price-row">
-        <span class="price">${fmtPrice(s)}</span>
-        <span class="change">${fmtChg(s)}</span>
-      </div>
+function chgHTML(s){
+  if(s.chgPct===null)return'<span style="color:var(--text-dim)">--</span>';
+  const sign=s.chgPct>0?'+':'';
+  const color=s.chgPct>0?'var(--green)':s.chgPct<0?'var(--red)':'var(--text-dim)';
+  return`<span style="color:${color}">${sign}${s.chgPct.toFixed(2)}%</span>`;
+}
+
+// ===== SPARKLINE SVG =====
+function sparkSVG(data,up){
+  if(!data||data.length<2)return'';
+  const w=100,h=24,pad=2;
+  const min=Math.min(...data),max=Math.max(...data),range=max-min||1;
+  let pts=data.map((v,i)=>`${pad+(i/(data.length-1))*(w-pad*2)},${h-pad-((v-min)/range)*(h-pad*2)}`);
+  const color=up?'#3fb950':'#f85149';
+  return`<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:100%"><polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/></svg>`;
+}
+
+// ===== RENDER CHAIN CARD =====
+function chainCard(s){
+  const up=s.chg>0;
+  return`
+  <div class="chain-card ${s.chg>0?'cc-up':s.chg<0?'cc-down':''}" onclick="openModal('${s.id}')" data-country="${s.country}" data-step="${s.step}">
+    <div class="cc-top">
+      <div class="cc-name">${s.flag} ${s.name}</div>
+      <span class="cc-change">${chgHTML(s)}</span>
+    </div>
+    <div class="cc-ticker">${s.ticker}</div>
+    <div class="cc-bottom">
+      <span class="cc-price">${fmt(s)}</span>
+    </div>
+    <div class="cc-spark">${sparkSVG(s.spark,up)}</div>
+  </div>`;
+}
+
+// ===== RENDER CHAIN FLOW =====
+function renderChain(filterCountry){
+  const cf=document.getElementById('chainFlow');
+  cf.innerHTML='';
+  STEPS.forEach((step,i)=>{
+    let stocks=STOCKS.filter(s=>s.step===step.id);
+    if(filterCountry)stocks=stocks.filter(s=>s.country===filterCountry);
+    if(stocks.length===0)return;
+    if(i>0&&cf.children.length>0){
+      const conn=document.createElement('div');conn.className='chain-connector';
+      conn.innerHTML='<div class="line"></div><div class="arrow">→</div>';
+      cf.appendChild(conn);
+    }
+    const div=document.createElement('div');div.className='chain-step';
+    div.innerHTML=`<div class="step-label">${step.icon} ${step.label}</div><div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">${step.desc}</div>${stocks.map(chainCard).join('')}`;
+    cf.appendChild(div);
+  });
+}
+
+// ===== SUMMARY =====
+function renderSummary(filterCountry){
+  let data=STOCKS.filter(s=>s.price!==null);
+  if(filterCountry)data=data.filter(s=>s.country===filterCountry);
+  const up=data.filter(s=>s.chg>0).length;
+  const down=data.filter(s=>s.chg<0).length;
+  const best=data.length?data.reduce((a,b)=>a.chgPct>b.chgPct?a:b):null;
+  const worst=data.length?data.reduce((a,b)=>a.chgPct<b.chgPct?a:b):null;
+  // HBF Market Index: avg of all % changes weighted
+  const idx=data.length?1000+data.reduce((s,x)=>s+x.chgPct*10,0)/data.length:1000;
+  document.getElementById('summaryRow').innerHTML=`
+    <div class="summary-card">
+      <div class="s-label">HBF Market Index</div>
+      <div class="s-value">${idx.toFixed(2)}</div>
+      <div class="s-sub up">+${((idx-1000)/10).toFixed(1)}% avg</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">📈 Top Gainer</div>
+      <div class="s-value up">${best?best.name:'--'}</div>
+      <div class="s-sub up">${best?(best.chgPct>0?'+':'')+best.chgPct.toFixed(1)+'%':'--'}</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">📉 Top Loser</div>
+      <div class="s-value down">${worst?worst.name:'--'}</div>
+      <div class="s-sub down">${worst?worst.chgPct.toFixed(1)+'%':'--'}</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">Standard Status</div>
+      <div class="s-value" style="color:var(--cyan);font-size:16px">OCP v1.2 Adopted</div>
+      <div class="s-sub" style="color:var(--text-dim)">SK hynix + SanDisk 주도</div>
     </div>`;
 }
 
-// Render all sections
-for (const [key, stocks] of Object.entries(ALL_STOCKS)) {
-  const el = document.getElementById(key);
-  if (el) el.innerHTML = stocks.map(renderCard).join('');
+// ===== TABS =====
+const TABS=[
+  {id:'all',label:'ALL',country:null},
+  {id:'kr',label:'KOREA',country:'KR'},
+  {id:'us',label:'USA',country:'US'},
+  {id:'cn',label:'CHINA',country:'CN'},
+];
+let activeTab='all';
+
+function renderTabs(){
+  document.getElementById('tabBar').innerHTML=TABS.map(t=>`<button class="tab${activeTab===t.id?' active':''}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('');
 }
 
-// Summary: KR vs Global
-function renderSummary(containerId, stockSets) {
-  const all = stockSets.flat();
-  const withData = all.filter(s => s.price !== null);
-  const up = withData.filter(s => s.chg > 0).length;
-  const down = withData.filter(s => s.chg < 0).length;
-  const best = withData.length ? withData.reduce((a,b) => a.chgPct > b.chgPct ? a : b) : null;
-  const worst = withData.length ? withData.reduce((a,b) => a.chgPct < b.chgPct ? a : b) : null;
-  document.getElementById(containerId).innerHTML = `
-    <div class="summary-card"><div class="label">📈 상승</div><div class="value" style="color:var(--green)">${up}</div><div class="unit">종목</div></div>
-    <div class="summary-card"><div class="label">📉 하락</div><div class="value" style="color:var(--red)">${down}</div><div class="unit">종목</div></div>
-    <div class="summary-card"><div class="label">🏆 최고</div><div class="value" style="color:var(--green);font-size:16px">${best?best.name.split(' ')[0]:'--'}</div><div class="unit">${best?(best.chgPct>0?'+':'')+best.chgPct.toFixed(1)+'%':'--'}</div></div>
-    <div class="summary-card"><div class="label">⚠️ 최저</div><div class="value" style="color:var(--red);font-size:16px">${worst?worst.name.split(' ')[0]:'--'}</div><div class="unit">${worst?worst.chgPct.toFixed(1)+'%':'--'}</div></div>
+function switchTab(id){
+  activeTab=id;
+  renderTabs();
+  const tab=TABS.find(t=>t.id===id);
+  renderSummary(tab.country);
+  renderChain(tab.country);
+}
+
+// ===== NEWS =====
+function renderNews(){
+  document.getElementById('newsPanel').innerHTML=`
+    <h3>📰 HBF Intelligence Feed</h3>
+    <div class="news-item"><div class="n-source">OCP OFFICIAL</div><div class="n-title">샌디스크-하이닉스, OCP서 HBF 표준화 워크스트림 공식 개설</div><div class="n-summary">SK하이닉스와 샌디스크(WDC)가 OCP 산하에 HBF 글로벌 스펙 표준화 워크스트림을 개설. CBA 아키텍처 기반 인터페이스 규격 논의 중.</div></div>
+    <div class="news-item"><div class="n-source">FMS CONFERENCE</div><div class="n-title">FMS 2025: 샌디스크 HBF 기술 '최고 혁신상' 수상</div><div class="n-summary">Future of Memory and Storage 컨퍼런스에서 샌디스크 HBF가 Best of Show 수상. HBM 대비 8~16x 저장 밀도 강조.</div></div>
+    <div class="news-item"><div class="n-source">SEMICONDUCTOR ENGINEERING</div><div class="n-title">HBM 넘어 HBF로 — AI 추론 메모리 경쟁 격화</div><div class="n-summary">NAND 적층 기술과 CBA 아키텍처가 차세대 AI 메모리 핵심 경쟁 요소로 부상. 쓰기 수명 관리가 주요 과제.</div></div>
+    <div class="news-item"><div class="n-source">THE ELEC</div><div class="n-title">SK하이닉스, HBF 파일럿 라인 투자 검토… 2027 양산 목표</div><div class="n-summary">국내 장비 업체들에 HBF 관련 RFQ 발송 움직임 포착. 패키징 장비 수혜 기대감 고조.</div></div>
   `;
 }
-renderSummary('summary-kr', [ALL_STOCKS.kr_memory, ALL_STOCKS.kr_equipment, ALL_STOCKS.kr_material, ALL_STOCKS.kr_test, ALL_STOCKS.kr_etf]);
-renderSummary('summary-global', [ALL_STOCKS.gl_memory, ALL_STOCKS.gl_equipment, ALL_STOCKS.gl_material, ALL_STOCKS.gl_test]);
 
-// News
-const newsEl = document.getElementById('newsList');
-NEWS_DATA.forEach(n => {
-  newsEl.innerHTML += `<li class="news-item"><div class="news-title">${n.title}</div><div class="news-summary">${n.summary}</div><div class="news-source">📎 ${n.source}</div></li>`;
-});
+// ===== SOURCES =====
+function renderSources(){
+  document.getElementById('sourcesPanel').innerHTML=`
+    <h3>🔖 Quality Sources</h3>
+    ${[
+      {name:'OCP',desc:'HBF 표준화 공식 기구'},
+      {name:'FMS Conference',desc:'세계 최대 메모리 학회'},
+      {name:'Semiconductor Eng.',desc:'글로벌 최고 권위 기술지'},
+      {name:'The Elec',desc:'국내 반도체 공급망 단독 보도'},
+      {name:'TrendForce',desc:'NAND 시장조사·침투율 데이터'},
+      {name:'Yahoo Finance',desc:'실시간 주가 데이터'}
+    ].map(s=>`<span class="source-tag">${s.name}</span>`).join('')}
+    <div style="font-size:10px;color:var(--text-muted);margin-top:8px">${['OCP','FMS Conference','Semiconductor Eng.','The Elec','TrendForce','Yahoo Finance'].map(s=>s+' — '+{OCP:'HBF 표준화 공식 기구', 'FMS Conference':'세계 최대 메모리 학회', 'Semiconductor Eng.':'글로벌 최고 권위 기술지', 'The Elec':'국내 반도체 공급망 단독', 'TrendForce':'NAND 시장조사·침투율', 'Yahoo Finance':'실시간 주가 데이터'}[s]).join(' · ')}</div>
+  `;
+}
 
-// Sources
-const sourcesEl = document.getElementById('sourcesGrid');
-SOURCES.forEach(s => {
-  sourcesEl.innerHTML += `<div class="source-card"><div class="source-name">${s.name}</div><div class="source-desc">${s.desc}</div></div>`;
-});
-
-// ===== TABS =====
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.tab-btn:${tab==='kr'?'first-child':'last-child'}`).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach((b,i) => { if((tab==='kr'&&i===0)||(tab==='global'&&i===1)) b.classList.add('active'); });
-  document.getElementById('tab-'+tab).classList.add('active');
-  document.getElementById('summary-'+tab).classList.add('active');
+// ===== INSIGHT =====
+function renderInsight(){
+  document.getElementById('insightBar').innerHTML=`
+    <strong>💡 Peer's Insight</strong><br>
+    HBF는 HBM처럼 단순 D램 적층이 아닌, <strong>수명 관리</strong>와 <strong>독자적 프로토콜 규격 확보</strong>가 흥망을 결정합니다.
+    단순히 '낸드를 만드는 회사'보다, <strong>샌디스크-SK하이닉스 동맹의 OCP 표준화</strong>에 직접 엮인
+    <strong>Synopsys(IP)</strong>나 <strong>SanDisk/WDC</strong>의 행보를 글로벌 포트폴리오에서 주목하세요.
+  `;
 }
 
 // ===== MODAL =====
-function openModal(name, ticker, tvSymbol, country, note) {
+function openModal(id){
+  const s=STOCKS.find(x=>x.id===id);if(!s)return;
   document.getElementById('modalOverlay').classList.add('show');
-  document.getElementById('modalName').textContent = name;
-  document.getElementById('modalMeta').textContent = `${country} · ${ticker}${note ? ' · ' + note : ''}`;
-  document.getElementById('modalPrice').textContent = '차트 로딩 중...';
-  document.getElementById('modalChange').textContent = '';
-  document.getElementById('modalStats').innerHTML = '';
-
-  // TradingView chart
-  const c = document.getElementById('chartContainer');
-  if (tvSymbol) {
-    const theme = encodeURIComponent(JSON.stringify({details:true,allow_symbol_change:false,toolbar_bg:"#0d1421",loading_screen:{backgroundColor:"#0d1421",foregroundColor:"#6366f1"}}));
-    const overrides = encodeURIComponent(JSON.stringify({"mainSeriesProperties.style":1,"mainSeriesProperties.candleStyle.upColor":"#10b981","mainSeriesProperties.candleStyle.downColor":"#ef4444","mainSeriesProperties.candleStyle.wickUpColor":"#10b981","mainSeriesProperties.candleStyle.wickDownColor":"#ef4444","paneProperties.background":"#0d1421","paneProperties.backgroundType":"solid","paneProperties.vertGridProperties.color":"#1a2740","paneProperties.horzGridProperties.color":"#1a2740"}));
-    c.innerHTML = `<iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv_${Date.now()}&symbol=${encodeURIComponent(tvSymbol)}&interval=D&hidesidetoolbar=1&symboledit=0&saveimage=0&details=1&calendar=0&hotlist=0&studies=[]&theme=dark&style=1&timezone=Asia/Seoul&withdateranges=1&hideideas=1&studies_overrides={}&overrides=${overrides}&enabled_features=[]&disabled_features=[]&locale=kr" style="width:100%;height:320px;"></iframe>`;
-  } else {
-    c.innerHTML = `<div style="height:320px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:14px;">📊 ${name}는 아직 상장되지 않았거나 실시간 차트를 지원하지 않습니다.<br><span style="font-size:12px;color:#4a5568;">Kioxia는 IPO 준비 중 / 비상장 기업</span></div>`;
+  document.getElementById('mName').textContent=s.flag+' '+s.name;
+  document.getElementById('mMeta').textContent=s.ticker+' · '+(s.note||'')+' · '+(s.country==='KR'?'Korea':s.country==='US'?'USA':s.country==='JP'?'Japan':s.country==='NL'?'Netherlands':s.country==='CN'?'China':'');
+  const cw=document.getElementById('chartWrap');
+  if(s.tv){
+    cw.innerHTML=`<iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv_${Date.now()}&symbol=${encodeURIComponent(s.tv)}&interval=D&hidesidetoolbar=1&symboledit=0&saveimage=0&details=1&hotlist=0&studies=[]&theme=dark&style=1&timezone=Asia/Seoul&withdateranges=1&hideideas=1&locale=kr" style="width:100%;height:340px;border:none;border-radius:8px"></iframe>`;
+  }else{
+    cw.innerHTML=`<div style="height:200px;display:flex;align-items:center;justify-content:center;color:var(--text-dim)">📊 ${s.name} — 아직 상장되지 않음 (Kioxia IPO 준비 중)</div>`;
   }
 }
-
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modalOverlay')) return;
+function closeModal(e){
+  if(e&&e.target!==document.getElementById('modalOverlay'))return;
   document.getElementById('modalOverlay').classList.remove('show');
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('modalOverlay').classList.remove('show'); });
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modalOverlay').classList.remove('show')});
+
+// ===== INIT =====
+renderTabs();
+renderSummary(null);
+renderChain(null);
+renderNews();
+renderSources();
+renderInsight();
 </script>
 </body>
 </html>
