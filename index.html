@@ -4,82 +4,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HBF MONITOR — Global Value Chain Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <style>
 :root {
-  --bg: #080b10;
-  --surface: #0d1117;
-  --card: #111722;
-  --border: #1a2332;
-  --border-glow: #1e3048;
-  --text: #e6edf3;
-  --text-dim: #7d8590;
-  --text-muted: #484f58;
-  --cyan: #00b4d8;
-  --cyan-glow: rgba(0,180,216,0.20);
-  --green: #3fb950;
-  --green-bg: rgba(63,185,80,0.10);
-  --red: #f85149;
-  --red-bg: rgba(248,81,73,0.10);
-  --gold: #d2991d;
-  --purple: #a371f7;
-  --radius: 10px;
-  --radius-sm: 7px;
+  --bg:#080b10;--surface:#0d1117;--card:#111722;--border:#1a2332;
+  --border-glow:#1e3048;--text:#e6edf3;--text-dim:#7d8590;--text-muted:#484f58;
+  --cyan:#00b4d8;--cyan-glow:rgba(0,180,216,0.20);
+  --green:#3fb950;--green-bg:rgba(63,185,80,0.10);
+  --red:#f85149;--red-bg:rgba(248,81,73,0.10);
+  --gold:#d2991d;--purple:#a371f7;--radius:10px;--radius-sm:7px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI','Inter','Noto Sans KR',sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  font-size: 13px;
-  line-height: 1.5;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter','Noto Sans KR',sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;
+  overflow-x:hidden;
 }
 .container{max-width:1320px;margin:0 auto;padding:16px 20px}
 
-/* === TOP BAR === */
 .topbar{
   display:flex;align-items:center;justify-content:space-between;
-  padding:14px 0 10px;
-  border-bottom:1px solid var(--border);
-  margin-bottom:16px;
-  flex-wrap:wrap;gap:8px;
+  padding:14px 0 10px;border-bottom:1px solid var(--border);
+  margin-bottom:16px;flex-wrap:wrap;gap:8px;
 }
-.topbar .logo{
-  font-size:18px;font-weight:800;letter-spacing:2px;
-  color:#fff;
-}
+.topbar .logo{font-size:18px;font-weight:800;letter-spacing:2px;color:#fff}
 .topbar .logo span{color:var(--cyan)}
-
-/* Tabs */
-.tabs{display:flex;gap:2px;}
+.tabs{display:flex;gap:2px}
 .tab{
   padding:7px 18px;border:none;background:transparent;
   color:var(--text-dim);font-size:12px;font-weight:600;
-  cursor:pointer;border-radius:6px;transition:all .18s;
-  font-family:inherit;letter-spacing:.5px;
-  position:relative;
+  cursor:pointer;border-radius:6px;transition:none;
+  font-family:inherit;letter-spacing:.5px;position:relative;
 }
-.tab:hover{color:var(--text);background:rgba(255,255,255,0.03)}
-.tab.active{color:var(--cyan);}
+.tab.active{color:var(--cyan)}
 .tab.active::after{
   content:'';position:absolute;bottom:0;left:30%;right:30%;height:2px;
   background:var(--cyan);border-radius:2px;
   box-shadow:0 0 8px var(--cyan-glow);
 }
-
-/* Live indicator */
-.live-indicator{
-  display:flex;align-items:center;gap:6px;color:var(--cyan);font-size:11px;
-}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--cyan-glow)}50%{box-shadow:0 0 0 6px transparent}}
+.live-indicator{display:flex;align-items:center;gap:6px;color:var(--cyan);font-size:11px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan)}
 .update-time{color:var(--text-muted);font-size:11px}
 
-/* === SUMMARY CARDS === */
 .summary-row{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;margin-bottom:22px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px
 }
 .summary-card{
   background:var(--card);border:1px solid var(--border);
@@ -95,102 +64,57 @@ body{
 .summary-card .s-sub{font-size:11px;margin-top:2px}
 .up{color:var(--green)}.down{color:var(--red)}
 
-/* === VALUE CHAIN FLOW === */
 .chain-title{
   font-size:13px;font-weight:700;color:var(--text-dim);
-  text-transform:uppercase;letter-spacing:1px;
-  margin-bottom:14px;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;
 }
-.chain-flow{
-  display:flex;gap:0;align-items:flex-start;
-  position:relative;margin-bottom:28px;
-  overflow-x:auto;
-}
-.chain-step{
-  flex:1;min-width:280px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:16px;
-  position:relative;
-}
+.chain-flow{display:flex;gap:0;align-items:flex-start;position:relative;margin-bottom:28px;overflow-x:auto}
+.chain-step{flex:1;min-width:280px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative}
 .chain-step+.chain-step{margin-left:0}
 .chain-connector{
   display:flex;align-items:center;justify-content:center;
-  min-width:40px;color:var(--cyan);
-  font-size:16px;opacity:.6;
-  align-self:stretch;
+  min-width:40px;color:var(--cyan);font-size:16px;opacity:.6;align-self:stretch;
 }
 .chain-connector .line{
   width:2px;height:100%;min-height:60px;
-  background:linear-gradient(180deg,transparent,var(--cyan),transparent);
-  opacity:.4;
+  background:linear-gradient(180deg,transparent,var(--cyan),transparent);opacity:.4;
 }
-.chain-connector .arrow{font-size:20px}
-.step-label{
-  font-size:10px;color:var(--cyan);text-transform:uppercase;
-  letter-spacing:1.5px;font-weight:700;margin-bottom:12px;
-  padding-bottom:8px;border-bottom:1px solid var(--border);
-}
+.step-label{font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 
-/* Stock card in chain */
 .chain-card{
   background:var(--card);border:1px solid var(--border);
   border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;
-  cursor:pointer;transition:all .2s;
-  position:relative;overflow:hidden;
+  cursor:pointer;overflow:hidden;transform:translateY(0);
 }
-.chain-card:hover{
-  border-color:var(--cyan);
-  box-shadow:0 0 16px rgba(0,180,216,0.08);
-  transform:translateY(-1px);
-}
+.chain-card:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,180,216,0.08)}
 .chain-card .cc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .chain-card .cc-name{font-size:13px;font-weight:700}
-.chain-card .cc-flag{font-size:14px}
 .chain-card .cc-ticker{font-size:10px;color:var(--text-dim);font-family:monospace;margin-bottom:6px}
 .chain-card .cc-bottom{display:flex;justify-content:space-between;align-items:center}
 .chain-card .cc-price{font-size:15px;font-weight:700;font-family:'SF Mono',monospace}
-.chain-card .cc-change{font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px;}
-.cc-up{color:var(--green);.cc-change{background:var(--green-bg)}}
-.cc-down{color:var(--red);.cc-change{background:var(--red-bg)}}
-/* Sparkline */
+.chain-card .cc-change{font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px}
+.cc-up .cc-change{background:var(--green-bg);color:var(--green)}
+.cc-down .cc-change{background:var(--red-bg);color:var(--red)}
 .cc-spark{height:28px;margin-top:6px;opacity:.5}
 .cc-spark svg{width:100%;height:100%}
 
-/* === RIGHT PANEL: NEWS === */
 .panels{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:6px}
-.news-panel{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:18px;
-}
+.news-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
 .news-panel h3{font-size:12px;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
-.news-item{
-  padding:10px 0;border-bottom:1px solid var(--border);
-}
+.news-item{padding:10px 0;border-bottom:1px solid var(--border)}
 .news-item:last-child{border-bottom:none}
 .news-item .n-source{font-size:9px;color:var(--cyan);text-transform:uppercase;margin-bottom:2px}
 .news-item .n-title{font-size:13px;font-weight:600;margin-bottom:2px;line-height:1.4}
 .news-item .n-summary{font-size:11px;color:var(--text-dim);line-height:1.4}
 
-/* Sources */
-.sources-panel{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:18px;
-}
+.sources-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
 .sources-panel h3{font-size:12px;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
-.source-tag{
-  display:inline-block;padding:5px 10px;margin:0 4px 6px 0;
-  background:var(--card);border:1px solid var(--border);
-  border-radius:20px;font-size:10px;color:var(--text-dim);
-}
+.source-tag{display:inline-block;padding:5px 10px;margin:0 4px 6px 0;background:var(--card);border:1px solid var(--border);border-radius:20px;font-size:10px;color:var(--text-dim)}
 
-/* Insight */
 .insight-bar{
   background:linear-gradient(135deg,rgba(0,180,216,0.05),rgba(163,113,247,0.04));
   border:1px solid var(--border-glow);border-radius:var(--radius);
-  padding:14px 18px;margin-top:16px;
-  font-size:12px;color:#b0b8c4;line-height:1.6;
+  padding:14px 18px;margin-top:16px;font-size:12px;color:#b0b8c4;line-height:1.6;
 }
 .insight-bar strong{color:var(--gold)}
 
@@ -201,7 +125,6 @@ body{
   justify-content:center;align-items:center;
   backdrop-filter:blur(4px);
 }
-.modal-overlay.show{display:flex}
 .modal{
   background:var(--surface);border:1px solid var(--border);
   border-radius:14px;width:min(92vw,780px);max-height:88vh;
@@ -216,15 +139,14 @@ body{
 .modal .close-btn:hover{background:rgba(255,255,255,.06);color:#fff}
 .modal .m-name{font-size:20px;font-weight:700}
 .modal .m-meta{font-size:11px;color:var(--text-dim);margin-bottom:14px}
-.modal .chart-wrap{height:340px;border-radius:8px;overflow:hidden}
+.chart-wrap canvas{border-radius:8px;background:var(--card)}
 
 .footer{text-align:center;padding:24px;font-size:10px;color:var(--text-muted);border-top:1px solid var(--border);margin-top:28px}
 .footer a{color:var(--cyan);text-decoration:none}
 
 @media(max-width:900px){
   .summary-row{grid-template-columns:repeat(2,1fr)}
-  .chain-flow{flex-direction:column}
-  .chain-connector{display:none}
+  .chain-flow{flex-direction:column}.chain-connector{display:none}
   .panels{grid-template-columns:1fr}
 }
 @media(max-width:500px){
@@ -236,25 +158,21 @@ body{
 <body>
 <div class="container">
 
-<!-- ========== TOP BAR ========== -->
 <div class="topbar">
   <div class="logo">HBF <span>MONITOR</span></div>
   <div class="tabs" id="tabBar"></div>
   <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-    <div class="live-indicator"><div class="live-dot"></div>Live Update</div>
+    <div class="live-indicator"><div class="live-dot" id="liveDot"></div>Live Update</div>
     <div class="update-time" id="updateTime"></div>
   </div>
 </div>
 
-<!-- ========== SUMMARY ========== -->
 <div class="summary-row" id="summaryRow"></div>
 
-<!-- ========== VALUE CHAIN FLOW ========== -->
-<div class="chain-title">🔗 HBF Value Chain Map</div>
-<div class="chain-flow" id="chainFlow"></div>
+<div class="chain-title gsap-section">🔗 HBF Value Chain Map</div>
+<div class="chain-flow gsap-section" id="chainFlow"></div>
 
-<!-- ========== NEWS + SOURCES ========== -->
-<div class="panels">
+<div class="panels gsap-section">
   <div>
     <div class="news-panel" id="newsPanel"></div>
     <div class="insight-bar" id="insightBar"></div>
@@ -262,13 +180,12 @@ body{
   <div class="sources-panel" id="sourcesPanel"></div>
 </div>
 
-<footer class="footer">
+<footer class="footer gsap-section">
   HBF Global Value Chain Monitor · Powered by Hermes Agent · <a href="https://github.com/jayhalox/hbf-dashboard">GitHub</a><br>
-  Data: Yahoo Finance · News: OCP / FMS / Semiconductor Engineering / The Elec / TrendForce · 투자 참고용
+  Data: Yahoo Finance · News: OCP / FMS / SE / The Elec / TrendForce · GSAP Animation
 </footer>
 </div>
 
-<!-- ========== MODAL ========== -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <button class="close-btn" onclick="closeModal()">✕</button>
@@ -279,305 +196,172 @@ body{
 </div>
 
 <script>
+// ===== Register GSAP Plugins =====
+gsap.registerPlugin(ScrollTrigger);
+
 // ===== DATA =====
-const UPDATE_TIME = new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}).replace(/\./g,'.').replace(/\s/g,' ');
-document.getElementById('updateTime').textContent = 'Last Update: ' + UPDATE_TIME + ' KST';
+const UPDATE_TIME=new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul'});
+document.getElementById('updateTime').textContent='Last Update: '+UPDATE_TIME+' KST';
 
-// All stocks with chain step
-const STOCKS = [
-  // Step 1: IDM (Memory Makers)
-  {id:'sk',name:'SK hynix',ticker:'000660.KS',country:'KR',flag:'🇰🇷',step:'idm',price:2298000,prev:2243000,chg:55000,chgPct:2.45,tv:'KRX:000660',spark:[100,102,105,108,110,108,112,115,118,120,122,120,125]},
-  {id:'ss',name:'Samsung',ticker:'005930.KS',country:'KR',flag:'🇰🇷',step:'idm',price:351500,prev:307000,chg:44500,chgPct:14.50,tv:'KRX:005930',spark:[80,82,88,92,95,98,105,108,112,115,118,120,126]},
-  {id:'wdc',name:'SanDisk / WD',ticker:'WDC',country:'US',flag:'🇺🇸',step:'idm',price:575.50,prev:531.18,chg:44.32,chgPct:8.34,tv:'NASDAQ:WDC',spark:[90,92,93,95,98,100,102,105,107,108,110,112,114],note:'⚠️ HBF 최초 고안·OCP 표준화 주도'},
-  {id:'mu',name:'Micron',ticker:'MU',country:'US',flag:'🇺🇸',step:'idm',price:996,prev:923.52,chg:72.48,chgPct:7.85,tv:'NASDAQ:MU',spark:[85,88,90,93,95,97,100,102,105,107,109,111,113]},
-  {id:'kioxia',name:'Kioxia',ticker:'(비상장)',country:'JP',flag:'🇯🇵',step:'idm',price:null,prev:null,chg:null,chgPct:null,tv:'',spark:null,note:'샌디스크와 낸드 합작'},
-
-  // Step 2: Equipment & Materials
-  {id:'amat',name:'Applied Materials',ticker:'AMAT',country:'US',flag:'🇺🇸',step:'equip',price:501.70,prev:449.68,chg:52.02,chgPct:11.57,tv:'NASDAQ:AMAT',spark:[88,90,92,95,98,102,105,108,110,112,113,114,116]},
-  {id:'tel',name:'Tokyo Electron',ticker:'8035.T',country:'JP',flag:'🇯🇵',step:'equip',price:59640,prev:53060,chg:6580,chgPct:12.40,tv:'TSE:8035',spark:[87,89,92,95,99,103,107,110,112,114,115,116,118]},
-  {id:'asml',name:'ASML',ticker:'ASML',country:'NL',flag:'🇳🇱',step:'equip',price:1757.47,prev:1605.77,chg:151.70,chgPct:9.45,tv:'EURONEXT:ASML',spark:[86,88,91,94,97,100,104,107,109,111,113,114,115]},
-  {id:'asmi',name:'ASM International',ticker:'ASM',country:'NL',flag:'🇳🇱',step:'equip',price:6.80,prev:7.16,chg:-0.36,chgPct:-5.03,tv:'EURONEXT:ASM',spark:[100,102,103,101,99,97,95,93,92,90,88,86,84]},
-  {id:'hanmi',name:'한미반도체',ticker:'042700.KS',country:'KR',flag:'🇰🇷',step:'equip',price:304000,prev:319000,chg:-15000,chgPct:-4.70,tv:'KRX:042700',spark:[100,101,99,97,96,94,92,91,90,89,88,87,86]},
-  {id:'psk',name:'PSK Holdings',ticker:'031980.KS',country:'KR',flag:'🇰🇷',step:'equip',price:64000,prev:120700,chg:-56700,chgPct:-46.98,tv:'KRX:031980',spark:[100,95,90,85,80,75,70,65,62,58,54,52,50]},
-  {id:'entg',name:'Entegris',ticker:'ENTG',country:'US',flag:'🇺🇸',step:'equip',price:139.88,prev:138.44,chg:1.44,chgPct:1.04,tv:'NASDAQ:ENTG',spark:[97,98,98,99,99,100,100,101,101,102,102,103,103]},
-  {id:'soul',name:'솔브레인',ticker:'357780.KS',country:'KR',flag:'🇰🇷',step:'equip',price:281000,prev:412500,chg:-131500,chgPct:-31.88,tv:'KRX:357780',spark:[100,98,95,90,85,82,78,75,72,70,68,66,65]},
-  {id:'tck',name:'티씨케이',ticker:'064760.KS',country:'KR',flag:'🇰🇷',step:'equip',price:119900,prev:287000,chg:-167100,chgPct:-58.22,tv:'KRX:064760',spark:[100,95,88,80,72,65,58,52,48,45,42,40,38]},
-  {id:'anji',name:'Anji Micro',ticker:'688019.SS',country:'CN',flag:'🇨🇳',step:'equip',price:282.59,prev:284.23,chg:-1.64,chgPct:-0.58,tv:'SSE:688019',spark:[100,100,99,99,98,98,97,97,96,96,95,95,94]},
-  {id:'tfme',name:'TFME (通富)',ticker:'002156.SZ',country:'CN',flag:'🇨🇳',step:'equip',price:71.10,prev:66.00,chg:5.10,chgPct:7.73,tv:'SZSE:002156',spark:[85,87,90,92,95,97,100,103,105,108,110,112,114]},
-
-  // Step 3: Test & IP
-  {id:'snps',name:'Synopsys',ticker:'SNPS',country:'US',flag:'🇺🇸',step:'test',price:494.48,prev:480.64,chg:13.84,chgPct:2.88,tv:'NASDAQ:SNPS',spark:[92,94,95,97,98,99,100,102,103,104,105,106,107],note:'🔑 HBF 인터페이스 IP 주도'},
-  {id:'rmbs',name:'Rambus',ticker:'RMBS',country:'US',flag:'🇺🇸',step:'test',price:169.35,prev:148.02,chg:21.33,chgPct:14.41,tv:'NASDAQ:RMBS',spark:[78,82,86,90,94,98,103,107,110,114,117,120,124],note:'🔑 HBF 컨트롤러 IP'},
-  {id:'ter',name:'Teradyne',ticker:'TER',country:'US',flag:'🇺🇸',step:'test',price:406.86,prev:382.65,chg:24.21,chgPct:6.33,tv:'NASDAQ:TER',spark:[88,90,92,94,97,99,102,104,106,108,110,111,113]},
-  {id:'adv',name:'Advantest',ticker:'6857.T',country:'JP',flag:'🇯🇵',step:'test',price:26770,prev:25675,chg:1095,chgPct:4.26,tv:'TSE:6857',spark:[90,92,93,95,97,98,100,101,103,104,105,106,107]},
-  {id:'tfe',name:'티에프이',ticker:'425420.KS',country:'KR',flag:'🇰🇷',step:'test',price:26250,prev:54200,chg:-27950,chgPct:-51.57,tv:'KRX:425420',spark:[100,95,90,82,74,66,58,52,48,44,40,37,35]},
-  {id:'sol',name:'SOL AI소부장 ETF',ticker:'473050.KS',country:'KR',flag:'🇰🇷',step:'test',price:2055,prev:2075,chg:-20,chgPct:-0.96,tv:'KRX:473050',spark:[100,99,99,98,98,97,97,96,96,95,95,94,94]},
+const STOCKS=[
+  {id:'sk',name:'SK hynix',ticker:'000660.KS',country:'KR',flag:'🇰🇷',step:'idm',price:2298000,prev:2243000,chg:55000,chgPct:2.45,spark:[100,102,105,108,110,108,112,115,118,120,122,120,125]},
+  {id:'ss',name:'Samsung',ticker:'005930.KS',country:'KR',flag:'🇰🇷',step:'idm',price:351500,prev:307000,chg:44500,chgPct:14.50,spark:[80,82,88,92,95,98,105,108,112,115,118,120,126]},
+  {id:'wdc',name:'SanDisk / WD',ticker:'WDC',country:'US',flag:'🇺🇸',step:'idm',price:575.50,prev:531.18,chg:44.32,chgPct:8.34,spark:[90,92,93,95,98,100,102,105,107,108,110,112,114],note:'⚠️ HBF 최초 고안·OCP 표준화 주도'},
+  {id:'mu',name:'Micron',ticker:'MU',country:'US',flag:'🇺🇸',step:'idm',price:996,prev:923.52,chg:72.48,chgPct:7.85,spark:[85,88,90,93,95,97,100,102,105,107,109,111,113]},
+  {id:'kioxia',name:'Kioxia',ticker:'(비상장)',country:'JP',flag:'🇯🇵',step:'idm',price:null,prev:null,chg:null,chgPct:null,spark:null,note:'샌디스크와 낸드 합작'},
+  {id:'amat',name:'Applied Materials',ticker:'AMAT',country:'US',flag:'🇺🇸',step:'equip',price:501.70,prev:449.68,chg:52.02,chgPct:11.57,spark:[88,90,92,95,98,102,105,108,110,112,113,114,116]},
+  {id:'tel',name:'Tokyo Electron',ticker:'8035.T',country:'JP',flag:'🇯🇵',step:'equip',price:59640,prev:53060,chg:6580,chgPct:12.40,spark:[87,89,92,95,99,103,107,110,112,114,115,116,118]},
+  {id:'asml',name:'ASML',ticker:'ASML',country:'NL',flag:'🇳🇱',step:'equip',price:1757.47,prev:1605.77,chg:151.70,chgPct:9.45,spark:[86,88,91,94,97,100,104,107,109,111,113,114,115]},
+  {id:'asmi',name:'ASM International',ticker:'ASM',country:'NL',flag:'🇳🇱',step:'equip',price:6.80,prev:7.16,chg:-0.36,chgPct:-5.03,spark:[100,102,103,101,99,97,95,93,92,90,88,86,84]},
+  {id:'hanmi',name:'한미반도체',ticker:'042700.KS',country:'KR',flag:'🇰🇷',step:'equip',price:304000,prev:319000,chg:-15000,chgPct:-4.70,spark:[100,101,99,97,96,94,92,91,90,89,88,87,86]},
+  {id:'psk',name:'PSK Holdings',ticker:'031980.KS',country:'KR',flag:'🇰🇷',step:'equip',price:64000,prev:120700,chg:-56700,chgPct:-46.98,spark:[100,95,90,85,80,75,70,65,62,58,54,52,50]},
+  {id:'entg',name:'Entegris',ticker:'ENTG',country:'US',flag:'🇺🇸',step:'equip',price:139.88,prev:138.44,chg:1.44,chgPct:1.04,spark:[97,98,98,99,99,100,100,101,101,102,102,103,103]},
+  {id:'soul',name:'솔브레인',ticker:'357780.KS',country:'KR',flag:'🇰🇷',step:'equip',price:281000,prev:412500,chg:-131500,chgPct:-31.88,spark:[100,98,95,90,85,82,78,75,72,70,68,66,65]},
+  {id:'tck',name:'티씨케이',ticker:'064760.KS',country:'KR',flag:'🇰🇷',step:'equip',price:119900,prev:287000,chg:-167100,chgPct:-58.22,spark:[100,95,88,80,72,65,58,52,48,45,42,40,38]},
+  {id:'anji',name:'Anji Micro',ticker:'688019.SS',country:'CN',flag:'🇨🇳',step:'equip',price:282.59,prev:284.23,chg:-1.64,chgPct:-0.58,spark:[100,100,99,99,98,98,97,97,96,96,95,95,94]},
+  {id:'tfme',name:'TFME (通富)',ticker:'002156.SZ',country:'CN',flag:'🇨🇳',step:'equip',price:71.10,prev:66.00,chg:5.10,chgPct:7.73,spark:[85,87,90,92,95,97,100,103,105,108,110,112,114]},
+  {id:'snps',name:'Synopsys',ticker:'SNPS',country:'US',flag:'🇺🇸',step:'test',price:494.48,prev:480.64,chg:13.84,chgPct:2.88,spark:[92,94,95,97,98,99,100,102,103,104,105,106,107],note:'🔑 HBF 인터페이스 IP 주도'},
+  {id:'rmbs',name:'Rambus',ticker:'RMBS',country:'US',flag:'🇺🇸',step:'test',price:169.35,prev:148.02,chg:21.33,chgPct:14.41,spark:[78,82,86,90,94,98,103,107,110,114,117,120,124],note:'🔑 HBF 컨트롤러 IP'},
+  {id:'ter',name:'Teradyne',ticker:'TER',country:'US',flag:'🇺🇸',step:'test',price:406.86,prev:382.65,chg:24.21,chgPct:6.33,spark:[88,90,92,94,97,99,102,104,106,108,110,111,113]},
+  {id:'adv',name:'Advantest',ticker:'6857.T',country:'JP',flag:'🇯🇵',step:'test',price:26770,prev:25675,chg:1095,chgPct:4.26,spark:[90,92,93,95,97,98,100,101,103,104,105,106,107]},
+  {id:'tfe',name:'티에프이',ticker:'425420.KS',country:'KR',flag:'🇰🇷',step:'test',price:26250,prev:54200,chg:-27950,chgPct:-51.57,spark:[100,95,90,82,74,66,58,52,48,44,40,37,35]},
+  {id:'sol',name:'SOL AI소부장 ETF',ticker:'473050.KS',country:'KR',flag:'🇰🇷',step:'test',price:2055,prev:2075,chg:-20,chgPct:-0.96,spark:[100,99,99,98,98,97,97,96,96,95,95,94,94]},
 ];
 
-// Chain step definitions
-const STEPS = [
+const STEPS=[
   {id:'idm',label:'① IDM — Memory Makers',icon:'🏭',desc:'CBA 아키텍처·3D NAND 적층 제조'},
   {id:'equip',label:'② Equipment & Materials',icon:'🔧',desc:'적층 패키징·CMP·본딩 장비/소재'},
   {id:'test',label:'③ Test & IP',icon:'🔬',desc:'인터페이스 검증·컨트롤러 IP 설계'},
 ];
 
-// ===== PRICE FORMAT =====
-function fmt(s){
-  if(s.price===null)return '--';
-  if(s.country==='KR'){if(s.price>=1e6)return'₩'+(s.price/1e8).toFixed(2)+'억';if(s.price>=1e4)return'₩'+(s.price/1e4).toFixed(1)+'만';return'₩'+s.price.toLocaleString()}
-  if(s.country==='JP')return'¥'+s.price.toLocaleString();
-  if(s.country==='NL')return'€'+s.price.toFixed(2);
-  if(s.country==='CN')return'¥'+s.price.toFixed(2);
-  return'$'+s.price.toFixed(2);
-}
+const TABS=[{id:'all',label:'ALL',country:null},{id:'kr',label:'KOREA',country:'KR'},{id:'us',label:'USA',country:'US'},{id:'cn',label:'CHINA',country:'CN'}];
+let activeTab='all';
 
-function chgHTML(s){
-  if(s.chgPct===null)return'<span style="color:var(--text-dim)">--</span>';
-  const sign=s.chgPct>0?'+':'';
-  const color=s.chgPct>0?'var(--green)':s.chgPct<0?'var(--red)':'var(--text-dim)';
-  return`<span style="color:${color}">${sign}${s.chgPct.toFixed(2)}%</span>`;
-}
+// ===== Helpers =====
+function fmt(s){if(s.price===null)return'--';if(s.country==='KR'){if(s.price>=1e6)return'₩'+(s.price/1e8).toFixed(2)+'억';if(s.price>=1e4)return'₩'+(s.price/1e4).toFixed(1)+'만';return'₩'+s.price.toLocaleString()}if(s.country==='JP')return'¥'+s.price.toLocaleString();if(s.country==='NL')return'€'+s.price.toFixed(2);if(s.country==='CN')return'¥'+s.price.toFixed(2);return'$'+s.price.toFixed(2)}
+function chgHTML(s){if(s.chgPct===null)return'<span style="color:var(--text-dim)">--</span>';const sign=s.chgPct>0?'+':'';const c=s.chgPct>0?'var(--green)':s.chgPct<0?'var(--red)':'var(--text-dim)';return`<span style="color:${c}">${sign}${s.chgPct.toFixed(2)}%</span>`}
+function sparkSVG(data,up){if(!data||data.length<2)return'';const min=Math.min(...data),max=Math.max(...data),range=max-min||1;let pts=data.map((v,i)=>`${2+(i/(data.length-1))*96},${22-((v-min)/range)*20}`);const color=up?'#3fb950':'#f85149';return`<svg viewBox="0 0 100 24"><polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.2" stroke-linecap="round" opacity="0.8"/></svg>`}
+function chainCard(s){const up=s.chg>0;return`<div class="chain-card ${s.chg>0?'cc-up':s.chg<0?'cc-down':''}" onclick="openModal('${s.id}')" data-country="${s.country}" data-step="${s.step}"><div class="cc-top"><div class="cc-name">${s.flag} ${s.name}</div><span class="cc-change">${chgHTML(s)}</span></div><div class="cc-ticker">${s.ticker}</div><div class="cc-bottom"><span class="cc-price">${fmt(s)}</span></div><div class="cc-spark">${sparkSVG(s.spark,up)}</div></div>`}
 
-// ===== SPARKLINE SVG =====
-function sparkSVG(data,up){
-  if(!data||data.length<2)return'';
-  const w=100,h=24,pad=2;
-  const min=Math.min(...data),max=Math.max(...data),range=max-min||1;
-  let pts=data.map((v,i)=>`${pad+(i/(data.length-1))*(w-pad*2)},${h-pad-((v-min)/range)*(h-pad*2)}`);
-  const color=up?'#3fb950':'#f85149';
-  return`<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:100%"><polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/></svg>`;
-}
-
-// ===== RENDER CHAIN CARD =====
-function chainCard(s){
-  const up=s.chg>0;
-  return`
-  <div class="chain-card ${s.chg>0?'cc-up':s.chg<0?'cc-down':''}" onclick="openModal('${s.id}')" data-country="${s.country}" data-step="${s.step}">
-    <div class="cc-top">
-      <div class="cc-name">${s.flag} ${s.name}</div>
-      <span class="cc-change">${chgHTML(s)}</span>
-    </div>
-    <div class="cc-ticker">${s.ticker}</div>
-    <div class="cc-bottom">
-      <span class="cc-price">${fmt(s)}</span>
-    </div>
-    <div class="cc-spark">${sparkSVG(s.spark,up)}</div>
-  </div>`;
-}
-
-// ===== RENDER CHAIN FLOW =====
+// ===== Render =====
 function renderChain(filterCountry){
-  const cf=document.getElementById('chainFlow');
-  cf.innerHTML='';
+  const cf=document.getElementById('chainFlow');cf.innerHTML='';
   STEPS.forEach((step,i)=>{
     let stocks=STOCKS.filter(s=>s.step===step.id);
     if(filterCountry)stocks=stocks.filter(s=>s.country===filterCountry);
-    if(stocks.length===0)return;
-    if(i>0&&cf.children.length>0){
-      const conn=document.createElement('div');conn.className='chain-connector';
-      conn.innerHTML='<div class="line"></div><div class="arrow">→</div>';
-      cf.appendChild(conn);
+    if(!stocks.length)return;
+    if(i>0&&cf.children.length){
+      const c=document.createElement('div');c.className='chain-connector';
+      c.innerHTML='<div class="line"></div><div class="arrow">→</div>';cf.appendChild(c);
     }
-    const div=document.createElement('div');div.className='chain-step';
-    div.innerHTML=`<div class="step-label">${step.icon} ${step.label}</div><div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">${step.desc}</div>${stocks.map(chainCard).join('')}`;
-    cf.appendChild(div);
+    const d=document.createElement('div');d.className='chain-step';
+    d.innerHTML=`<div class="step-label">${step.icon} ${step.label}</div><div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">${step.desc}</div>${stocks.map(chainCard).join('')}`;
+    cf.appendChild(d);
   });
+  // GSAP: animate chain cards
+  setTimeout(()=>{gsap.from('.chain-card',{y:20,opacity:0,duration:.4,stagger:.04,ease:'power2.out'})},50);
 }
 
-// ===== SUMMARY =====
 function renderSummary(filterCountry){
-  let data=STOCKS.filter(s=>s.price!==null);
-  if(filterCountry)data=data.filter(s=>s.country===filterCountry);
-  const up=data.filter(s=>s.chg>0).length;
-  const down=data.filter(s=>s.chg<0).length;
-  const best=data.length?data.reduce((a,b)=>a.chgPct>b.chgPct?a:b):null;
-  const worst=data.length?data.reduce((a,b)=>a.chgPct<b.chgPct?a:b):null;
-  // HBF Market Index: avg of all % changes weighted
-  const idx=data.length?1000+data.reduce((s,x)=>s+x.chgPct*10,0)/data.length:1000;
+  let d=STOCKS.filter(s=>s.price!==null);if(filterCountry)d=d.filter(s=>s.country===filterCountry);
+  const up=d.filter(s=>s.chg>0).length,down=d.filter(s=>s.chg<0).length;
+  const best=d.length?d.reduce((a,b)=>a.chgPct>b.chgPct?a:b):null;
+  const worst=d.length?d.reduce((a,b)=>a.chgPct<b.chgPct?a:b):null;
+  const idx=d.length?1000+d.reduce((s,x)=>s+x.chgPct*10,0)/d.length:1000;
   document.getElementById('summaryRow').innerHTML=`
-    <div class="summary-card">
-      <div class="s-label">HBF Market Index</div>
-      <div class="s-value">${idx.toFixed(2)}</div>
-      <div class="s-sub up">+${((idx-1000)/10).toFixed(1)}% avg</div>
-    </div>
-    <div class="summary-card">
-      <div class="s-label">📈 Top Gainer</div>
-      <div class="s-value up">${best?best.name:'--'}</div>
-      <div class="s-sub up">${best?(best.chgPct>0?'+':'')+best.chgPct.toFixed(1)+'%':'--'}</div>
-    </div>
-    <div class="summary-card">
-      <div class="s-label">📉 Top Loser</div>
-      <div class="s-value down">${worst?worst.name:'--'}</div>
-      <div class="s-sub down">${worst?worst.chgPct.toFixed(1)+'%':'--'}</div>
-    </div>
-    <div class="summary-card">
-      <div class="s-label">Standard Status</div>
-      <div class="s-value" style="color:var(--cyan);font-size:16px">OCP v1.2 Adopted</div>
-      <div class="s-sub" style="color:var(--text-dim)">SK hynix + SanDisk 주도</div>
-    </div>`;
+    <div class="summary-card"><div class="s-label">HBF Market Index</div><div class="s-value" id="idxVal">${idx.toFixed(2)}</div><div class="s-sub up">+${((idx-1000)/10).toFixed(1)}% avg</div></div>
+    <div class="summary-card"><div class="s-label">📈 Top Gainer</div><div class="s-value up">${best?best.name:'--'}</div><div class="s-sub up">${best?(best.chgPct>0?'+':'')+best.chgPct.toFixed(1)+'%':'--'}</div></div>
+    <div class="summary-card"><div class="s-label">📉 Top Loser</div><div class="s-value down">${worst?worst.name:'--'}</div><div class="s-sub down">${worst?worst.chgPct.toFixed(1)+'%':'--'}</div></div>
+    <div class="summary-card"><div class="s-label">Standard Status</div><div class="s-value" style="color:var(--cyan);font-size:16px">OCP v1.2 Adopted</div><div class="s-sub" style="color:var(--text-dim)">SK hynix + SanDisk 주도</div></div>`;
+  setTimeout(()=>{gsap.from('.summary-card',{y:-15,opacity:0,duration:.45,stagger:.08,ease:'power3.out'})},50);
 }
-
-// ===== TABS =====
-const TABS=[
-  {id:'all',label:'ALL',country:null},
-  {id:'kr',label:'KOREA',country:'KR'},
-  {id:'us',label:'USA',country:'US'},
-  {id:'cn',label:'CHINA',country:'CN'},
-];
-let activeTab='all';
 
 function renderTabs(){
   document.getElementById('tabBar').innerHTML=TABS.map(t=>`<button class="tab${activeTab===t.id?' active':''}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('');
 }
-
 function switchTab(id){
-  activeTab=id;
-  renderTabs();
+  activeTab=id;renderTabs();
   const tab=TABS.find(t=>t.id===id);
-  renderSummary(tab.country);
-  renderChain(tab.country);
+  renderSummary(tab.country);renderChain(tab.country);
 }
 
-// ===== NEWS =====
-function renderNews(){
-  document.getElementById('newsPanel').innerHTML=`
-    <h3>📰 HBF Intelligence Feed</h3>
-    <div class="news-item"><div class="n-source">OCP OFFICIAL</div><div class="n-title">샌디스크-하이닉스, OCP서 HBF 표준화 워크스트림 공식 개설</div><div class="n-summary">SK하이닉스와 샌디스크(WDC)가 OCP 산하에 HBF 글로벌 스펙 표준화 워크스트림을 개설. CBA 아키텍처 기반 인터페이스 규격 논의 중.</div></div>
-    <div class="news-item"><div class="n-source">FMS CONFERENCE</div><div class="n-title">FMS 2025: 샌디스크 HBF 기술 '최고 혁신상' 수상</div><div class="n-summary">Future of Memory and Storage 컨퍼런스에서 샌디스크 HBF가 Best of Show 수상. HBM 대비 8~16x 저장 밀도 강조.</div></div>
-    <div class="news-item"><div class="n-source">SEMICONDUCTOR ENGINEERING</div><div class="n-title">HBM 넘어 HBF로 — AI 추론 메모리 경쟁 격화</div><div class="n-summary">NAND 적층 기술과 CBA 아키텍처가 차세대 AI 메모리 핵심 경쟁 요소로 부상. 쓰기 수명 관리가 주요 과제.</div></div>
-    <div class="news-item"><div class="n-source">THE ELEC</div><div class="n-title">SK하이닉스, HBF 파일럿 라인 투자 검토… 2027 양산 목표</div><div class="n-summary">국내 장비 업체들에 HBF 관련 RFQ 발송 움직임 포착. 패키징 장비 수혜 기대감 고조.</div></div>
-  `;
-}
-
-// ===== SOURCES =====
-function renderSources(){
-  document.getElementById('sourcesPanel').innerHTML=`
-    <h3>🔖 Quality Sources</h3>
-    ${[
-      {name:'OCP',desc:'HBF 표준화 공식 기구'},
-      {name:'FMS Conference',desc:'세계 최대 메모리 학회'},
-      {name:'Semiconductor Eng.',desc:'글로벌 최고 권위 기술지'},
-      {name:'The Elec',desc:'국내 반도체 공급망 단독 보도'},
-      {name:'TrendForce',desc:'NAND 시장조사·침투율 데이터'},
-      {name:'Yahoo Finance',desc:'실시간 주가 데이터'}
-    ].map(s=>`<span class="source-tag">${s.name}</span>`).join('')}
-    <div style="font-size:10px;color:var(--text-muted);margin-top:8px">${['OCP','FMS Conference','Semiconductor Eng.','The Elec','TrendForce','Yahoo Finance'].map(s=>s+' — '+{OCP:'HBF 표준화 공식 기구', 'FMS Conference':'세계 최대 메모리 학회', 'Semiconductor Eng.':'글로벌 최고 권위 기술지', 'The Elec':'국내 반도체 공급망 단독', 'TrendForce':'NAND 시장조사·침투율', 'Yahoo Finance':'실시간 주가 데이터'}[s]).join(' · ')}</div>
-  `;
-}
-
-// ===== INSIGHT =====
-function renderInsight(){
-  document.getElementById('insightBar').innerHTML=`
-    <strong>💡 Peer's Insight</strong><br>
-    HBF는 HBM처럼 단순 D램 적층이 아닌, <strong>수명 관리</strong>와 <strong>독자적 프로토콜 규격 확보</strong>가 흥망을 결정합니다.
-    단순히 '낸드를 만드는 회사'보다, <strong>샌디스크-SK하이닉스 동맹의 OCP 표준화</strong>에 직접 엮인
-    <strong>Synopsys(IP)</strong>나 <strong>SanDisk/WDC</strong>의 행보를 글로벌 포트폴리오에서 주목하세요.
-  `;
-}
-
-// ===== CHART UTILS =====
-function drawChart(canvas, data, isUp){
-  const ctx=canvas.getContext('2d');
-  const W=canvas.width=canvas.offsetWidth*2;
-  const H=canvas.height=canvas.offsetHeight*2;
-  ctx.scale(2,2);
-  const w=W/2,h=H/2,pad=10;
-  ctx.clearRect(0,0,w,h);
-
-  // Grid
-  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;
-  for(let i=0;i<5;i++){const y=pad+(h-pad*2)*(i/4);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}
-
-  if(!data||data.length<2)return drawNoData(ctx,w,h);
-
-  const closes=data.map(d=>d.close);
-  const min=Math.min(...closes),max=Math.max(...closes),range=max-min||1;
-  const toX=i=>pad+(i/(data.length-1))*(w-pad*2);
-  const toY=v=>h-pad-((v-min)/range)*(h-pad*2);
-
-  // Gradient fill
-  const grad=ctx.createLinearGradient(0,pad,0,h-pad);
-  const color=isUp?'#3fb950':'#f85149';
-  grad.addColorStop(0,color+'30');grad.addColorStop(1,color+'02');
-  ctx.fillStyle=grad;
-  ctx.beginPath();ctx.moveTo(toX(0),h-pad);
-  data.forEach((d,i)=>ctx.lineTo(toX(i),toY(d.close)));
-  ctx.lineTo(toX(data.length-1),h-pad);ctx.closePath();ctx.fill();
-
-  // Line
-  ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.lineJoin='round';
-  ctx.beginPath();data.forEach((d,i)=>i===0?ctx.moveTo(toX(i),toY(d.close)):ctx.lineTo(toX(i),toY(d.close)));ctx.stroke();
-
-  // Price labels
-  ctx.fillStyle='#7d8590';ctx.font='9px monospace';
-  function fmtP(v){if(v>=1e6)return(v/1e6).toFixed(1)+'M';if(v>=1000)return(v/1000).toFixed(1)+'K';return v.toFixed(2)}
-  ctx.fillText(fmtP(max),pad,pad+10);
-  ctx.fillText(fmtP(min),pad,h-pad-2);
-  const mid=(max+min)/2;
-  ctx.fillText(fmtP(mid),pad,toY(mid)+4);
-}
-
-function drawNoData(ctx,w,h){
-  ctx.fillStyle='#7d8590';ctx.font='13px sans-serif';
-  ctx.textAlign='center';
-  ctx.fillText('📊 차트 데이터를 불러올 수 없습니다',w/2,h/2-6);
-  ctx.fillText('시장이 마감되었거나 Yahoo Finance 연결 실패',w/2,h/2+14);
-  ctx.textAlign='start';
-}
-
-// ===== MODAL =====
+// ===== Chart =====
 let chartData=null;
-// Load chart data from same-origin JSON (no CORS!)
 fetch('data.json').then(r=>r.json()).then(d=>{chartData=d}).catch(()=>{});
+function drawChart(canvas,data,isUp){
+  const ctx=canvas.getContext('2d');const W=canvas.width=canvas.offsetWidth*2;const H=canvas.height=canvas.offsetHeight*2;
+  ctx.scale(2,2);const w=W/2,h=H/2,pad=10;ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=.5;
+  for(let i=0;i<5;i++){const y=pad+(h-pad*2)*(i/4);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}
+  if(!data||data.length<2){ctx.fillStyle='#7d8590';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('📊 No data',w/2,h/2);return}
+  const closes=data.map(d=>d.close),min=Math.min(...closes),max=Math.max(...closes),range=max-min||1;
+  const toX=i=>pad+(i/(data.length-1))*(w-pad*2),toY=v=>h-pad-((v-min)/range)*(h-pad*2);
+  const grad=ctx.createLinearGradient(0,pad,0,h-pad),color=isUp?'#3fb950':'#f85149';
+  grad.addColorStop(0,color+'30');grad.addColorStop(1,color+'02');ctx.fillStyle=grad;
+  ctx.beginPath();ctx.moveTo(toX(0),h-pad);data.forEach((d,i)=>ctx.lineTo(toX(i),toY(d.close)));ctx.lineTo(toX(data.length-1),h-pad);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.lineJoin='round';ctx.beginPath();data.forEach((d,i)=>i===0?ctx.moveTo(toX(i),toY(d.close)):ctx.lineTo(toX(i),toY(d.close)));ctx.stroke();
+  const fmtP=v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1e3).toFixed(1)+'K':v.toFixed(2);
+  ctx.fillStyle='#7d8590';ctx.font='9px monospace';ctx.textAlign='start';
+  ctx.fillText(fmtP(max),pad,pad+10);ctx.fillText(fmtP(min),pad,h-pad-2);ctx.fillText(fmtP((max+min)/2),pad,toY((max+min)/2)+4);
+}
 
-let chartAbort=null;
 function openModal(id){
   const s=STOCKS.find(x=>x.id===id);if(!s)return;
-  document.getElementById('modalOverlay').classList.add('show');
+  const overlay=document.getElementById('modalOverlay');
   document.getElementById('mName').textContent=s.flag+' '+s.name;
   document.getElementById('mMeta').textContent=s.ticker+' · '+(s.note||'')+' · '+fmt(s)+(s.chgPct!==null?' · '+(s.chgPct>0?'+':'')+s.chgPct.toFixed(2)+'%':'');
   const cw=document.getElementById('chartWrap');
-  if(!s.ticker||s.ticker.includes('비상장')){
-    cw.innerHTML=`<div style="height:340px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex-direction:column;gap:8px"><span style="font-size:16px">📊 ${s.name}</span><span style="font-size:12px">비상장 기업 — 실시간 차트 미지원</span></div>`;
-    return;
+  if(!s.ticker||s.ticker.includes('비상장')){cw.innerHTML=`<div style="height:340px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex-direction:column;gap:8px"><span style="font-size:16px">📊 ${s.name}</span><span style="font-size:12px">비상장 — 차트 미지원</span></div>`}
+  else if(!chartData||!chartData[s.id]){cw.innerHTML=`<div style="height:340px;display:flex;align-items:center;justify-content:center;color:var(--text-dim)">⏳ 데이터 로딩 중...</div>`}
+  else{
+    const raw=chartData[s.id],ohlc=raw.map(p=>({date:new Date(p.t*1000),close:p.c,high:p.h||p.c,low:p.l||p.c,volume:p.v||0}));
+    const isUp=ohlc.length>0&&ohlc[ohlc.length-1].close>=ohlc[0].close,first=ohlc[0],last=ohlc[ohlc.length-1];
+    const high=Math.max(...ohlc.map(d=>d.high)),low=Math.min(...ohlc.map(d=>d.low)),avgVol=Math.round(ohlc.reduce((s,d)=>s+d.volume,0)/ohlc.length);
+    cw.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px"><div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">OPEN</div><div style="font-size:13px;font-weight:700">${first?.close?.toFixed(2)||'--'}</div></div><div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">HIGH</div><div style="font-size:13px;font-weight:700;color:var(--green)">${high?.toFixed(2)||'--'}</div></div><div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">LOW</div><div style="font-size:13px;font-weight:700;color:var(--red)">${low?.toFixed(2)||'--'}</div></div><div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">VOL (avg)</div><div style="font-size:11px;font-weight:700">${avgVol>=1e6?(avgVol/1e6).toFixed(1)+'M':avgVol>=1e3?(avgVol/1e3).toFixed(1)+'K':avgVol}</div></div></div><canvas id="chartCanvas" style="width:100%;height:260px;border-radius:8px;background:var(--card)"></canvas><div style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:4px">${first?.date?.toLocaleDateString('ko-KR')||''} — ${last?.date?.toLocaleDateString('ko-KR')||''} · 6개월 일간 차트</div>`;
+    setTimeout(()=>{const c=document.getElementById('chartCanvas');if(c)drawChart(c,ohlc,isUp)},50);
   }
-  if(!chartData||!chartData[s.id]){
-    cw.innerHTML=`<div style="height:340px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex-direction:column;gap:8px"><span style="font-size:16px">⏳ 차트 데이터 로딩 중...</span><span style="font-size:12px">data.json을 불러오는 중입니다</span></div>`;
-    return;
-  }
-  const raw=chartData[s.id];
-  const ohlc=raw.map(p=>({date:new Date(p.t*1000),close:p.c,high:p.h||p.c,low:p.l||p.c,volume:p.v||0}));
-  const isUp=ohlc.length>0&&ohlc[ohlc.length-1].close>=ohlc[0].close;
-  const first=ohlc[0],last=ohlc[ohlc.length-1];
-  const high=Math.max(...ohlc.map(d=>d.high));
-  const low=Math.min(...ohlc.map(d=>d.low));
-  const avgVol=Math.round(ohlc.reduce((s,d)=>s+d.volume,0)/ohlc.length);
-
-  cw.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px">
-      <div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">OPEN</div><div style="font-size:13px;font-weight:700">${first?.close?.toFixed(2)||'--'}</div></div>
-      <div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">HIGH</div><div style="font-size:13px;font-weight:700;color:var(--green)">${high?.toFixed(2)||'--'}</div></div>
-      <div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">LOW</div><div style="font-size:13px;font-weight:700;color:var(--red)">${low?.toFixed(2)||'--'}</div></div>
-      <div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">VOL (avg)</div><div style="font-size:11px;font-weight:700">${avgVol>=1e6?(avgVol/1e6).toFixed(1)+'M':avgVol>=1e3?(avgVol/1e3).toFixed(1)+'K':avgVol}</div></div>
-    </div>
-    <canvas id="chartCanvas" style="width:100%;height:260px;border-radius:8px;background:var(--card)"></canvas>
-    <div style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:4px">${first?.date?.toLocaleDateString('ko-KR')||''} — ${last?.date?.toLocaleDateString('ko-KR')||''} · 6개월 일간 차트 · Yahoo Finance</div>
-  `;
-  setTimeout(()=>{const c=document.getElementById('chartCanvas');if(c)drawChart(c,ohlc,isUp)},50);
+  // GSAP modal animation
+  overlay.style.display='flex';
+  gsap.fromTo(overlay,{opacity:0},{opacity:1,duration:.2});
+  gsap.fromTo('.modal',{scale:.95,opacity:0,y:20},{scale:1,opacity:1,y:0,duration:.3,ease:'back.out(1.4)'});
 }
 function closeModal(e){
   if(e&&e.target!==document.getElementById('modalOverlay'))return;
-  document.getElementById('modalOverlay').classList.remove('show');
+  const overlay=document.getElementById('modalOverlay');
+  gsap.to(overlay,{opacity:0,duration:.15,onComplete:()=>{overlay.style.display='none'}});
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modalOverlay').classList.remove('show')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+// ===== News & Sources =====
+function renderStatic(){
+  document.getElementById('newsPanel').innerHTML=`<h3>📰 HBF Intelligence Feed</h3><div class="news-item"><div class="n-source">OCP OFFICIAL</div><div class="n-title">샌디스크-하이닉스, OCP서 HBF 표준화 워크스트림 공식 개설</div><div class="n-summary">SK하이닉스와 샌디스크(WDC)가 OCP 산하에 HBF 글로벌 스펙 표준화 워크스트림을 개설. CBA 아키텍처 기반 인터페이스 규격 논의 중.</div></div><div class="news-item"><div class="n-source">FMS CONFERENCE</div><div class="n-title">FMS 2025: 샌디스크 HBF 기술 '최고 혁신상' 수상</div><div class="n-summary">Future of Memory and Storage 컨퍼런스에서 샌디스크 HBF가 Best of Show 수상. HBM 대비 8~16x 저장 밀도 강조.</div></div><div class="news-item"><div class="n-source">SEMICONDUCTOR ENGINEERING</div><div class="n-title">HBM 넘어 HBF로 — AI 추론 메모리 경쟁 격화</div><div class="n-summary">NAND 적층 기술과 CBA 아키텍처가 차세대 AI 메모리 핵심 경쟁 요소로 부상. 쓰기 수명 관리가 주요 과제.</div></div><div class="news-item"><div class="n-source">THE ELEC</div><div class="n-title">SK하이닉스, HBF 파일럿 라인 투자 검토… 2027 양산 목표</div><div class="n-summary">국내 장비 업체들에 HBF 관련 RFQ 발송 움직임 포착.</div></div>`;
+  document.getElementById('sourcesPanel').innerHTML=`<h3>🔖 Quality Sources</h3>${['OCP','FMS Conference','Semiconductor Eng.','The Elec','TrendForce','Yahoo Finance'].map(s=>`<span class="source-tag">${s}</span>`).join('')}<div style="font-size:10px;color:var(--text-muted);margin-top:8px">HBF 표준화·메모리 학회·기술 분석·공급망·시장 데이터</div>`;
+  document.getElementById('insightBar').innerHTML=`<strong>💡 Peer's Insight</strong><br>HBF는 단순 D램 적층이 아닌 <strong>수명 관리</strong>와 <strong>독자적 프로토콜 규격 확보</strong>가 흥망을 결정합니다. <strong>샌디스크-SK하이닉스 동맹의 OCP 표준화</strong>에 직접 엮인 <strong>Synopsys(IP)</strong>나 <strong>SanDisk/WDC</strong>의 행보를 주목하세요.`;
+}
 
 // ===== INIT =====
-renderTabs();
-renderSummary(null);
-renderChain(null);
-renderNews();
-renderSources();
-renderInsight();
+renderTabs();renderStatic();
+renderSummary(null);renderChain(null);
+
+// ===== GSAP ANIMATIONS =====
+// Pulse live dot
+gsap.to('#liveDot',{scale:2,opacity:.2,duration:1.2,repeat:-1,yoyo:true,ease:'power2.inOut'});
+
+// Animate logo
+gsap.from('.logo',{x:-30,opacity:0,duration:.6,ease:'power3.out',delay:.1});
+
+// Animate topbar elements
+gsap.from('.tab',{y:-10,opacity:0,duration:.35,stagger:.06,ease:'power2.out',delay:.2});
+gsap.from('.live-indicator',{opacity:0,duration:.4,delay:.4});
+gsap.from('.update-time',{opacity:0,duration:.4,delay:.5});
+
+// Scroll-triggered sections
+gsap.utils.toArray('.gsap-section').forEach(el=>{
+  gsap.from(el,{scrollTrigger:{trigger:el,start:'top 90%',toggleActions:'play none none none'},y:30,opacity:0,duration:.6,ease:'power2.out'});
+});
+
+// Animate chain connector lines
+setTimeout(()=>{gsap.from('.chain-connector .line',{scaleY:0,transformOrigin:'top',duration:.8,stagger:.15,ease:'power2.inOut'})},300);
 </script>
 </body>
 </html>
