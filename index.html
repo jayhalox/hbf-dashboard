@@ -475,24 +475,120 @@ function renderInsight(){
   `;
 }
 
+// ===== CHART UTILS =====
+function drawChart(canvas, data, isUp){
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width=canvas.offsetWidth*2;
+  const H=canvas.height=canvas.offsetHeight*2;
+  ctx.scale(2,2);
+  const w=W/2,h=H/2,pad=10;
+  ctx.clearRect(0,0,w,h);
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;
+  for(let i=0;i<5;i++){const y=pad+(h-pad*2)*(i/4);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}
+
+  if(!data||data.length<2)return drawNoData(ctx,w,h);
+
+  const closes=data.map(d=>d.close);
+  const min=Math.min(...closes),max=Math.max(...closes),range=max-min||1;
+  const toX=i=>pad+(i/(data.length-1))*(w-pad*2);
+  const toY=v=>h-pad-((v-min)/range)*(h-pad*2);
+
+  // Gradient fill
+  const grad=ctx.createLinearGradient(0,pad,0,h-pad);
+  const color=isUp?'#3fb950':'#f85149';
+  grad.addColorStop(0,color+'30');grad.addColorStop(1,color+'02');
+  ctx.fillStyle=grad;
+  ctx.beginPath();ctx.moveTo(toX(0),h-pad);
+  data.forEach((d,i)=>ctx.lineTo(toX(i),toY(d.close)));
+  ctx.lineTo(toX(data.length-1),h-pad);ctx.closePath();ctx.fill();
+
+  // Line
+  ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.lineJoin='round';
+  ctx.beginPath();data.forEach((d,i)=>i===0?ctx.moveTo(toX(i),toY(d.close)):ctx.lineTo(toX(i),toY(d.close)));ctx.stroke();
+
+  // Price labels
+  ctx.fillStyle='#7d8590';ctx.font='9px monospace';
+  function fmtP(v){if(v>=1e6)return(v/1e6).toFixed(1)+'M';if(v>=1000)return(v/1000).toFixed(1)+'K';return v.toFixed(2)}
+  ctx.fillText(fmtP(max),pad,pad+10);
+  ctx.fillText(fmtP(min),pad,h-pad-2);
+  const mid=(max+min)/2;
+  ctx.fillText(fmtP(mid),pad,toY(mid)+4);
+}
+
+function drawNoData(ctx,w,h){
+  ctx.fillStyle='#7d8590';ctx.font='13px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('📊 차트 데이터를 불러올 수 없습니다',w/2,h/2-6);
+  ctx.fillText('시장이 마감되었거나 Yahoo Finance 연결 실패',w/2,h/2+14);
+  ctx.textAlign='start';
+}
+
 // ===== MODAL =====
+let chartAbort=null;
 function openModal(id){
   const s=STOCKS.find(x=>x.id===id);if(!s)return;
   document.getElementById('modalOverlay').classList.add('show');
   document.getElementById('mName').textContent=s.flag+' '+s.name;
-  document.getElementById('mMeta').textContent=s.ticker+' · '+(s.note||'')+' · '+(s.country==='KR'?'Korea':s.country==='US'?'USA':s.country==='JP'?'Japan':s.country==='NL'?'Netherlands':s.country==='CN'?'China':'');
+  document.getElementById('mMeta').textContent=s.ticker+' · '+(s.note||'')+' · '+fmt(s)+(s.chgPct!==null?' · '+(s.chgPct>0?'+':'')+s.chgPct.toFixed(2)+'%':'');
   const cw=document.getElementById('chartWrap');
-  if(s.tv){
-    cw.innerHTML=`<iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv_${Date.now()}&symbol=${encodeURIComponent(s.tv)}&interval=D&hidesidetoolbar=1&symboledit=0&saveimage=0&details=1&hotlist=0&studies=[]&theme=dark&style=1&timezone=Asia/Seoul&withdateranges=1&hideideas=1&locale=kr" style="width:100%;height:340px;border:none;border-radius:8px"></iframe>`;
-  }else{
-    cw.innerHTML=`<div style="height:200px;display:flex;align-items:center;justify-content:center;color:var(--text-dim)">📊 ${s.name} — 아직 상장되지 않음 (Kioxia IPO 준비 중)</div>`;
+  if(!s.ticker||s.ticker.includes('비상장')){
+    cw.innerHTML=`<div style="height:340px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex-direction:column;gap:8px"><span style="font-size:16px">📊 ${s.name}</span><span style="font-size:12px">비상장 기업 — 실시간 차트 미지원</span></div>`;
+    return;
   }
+  // Show loading
+  cw.innerHTML=`<div style="height:340px;display:flex;align-items:center;justify-content:center;color:var(--text-dim)"><span style="animation:pulse 1.5s infinite">⏳ 차트 로딩 중...</span></div>`;
+
+  // Abort previous
+  if(chartAbort){chartAbort.abort();chartAbort=null}
+
+  const ctrl=new AbortController();chartAbort=ctrl;
+  const ticker=s.ticker;
+  fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=6mo`,{signal:ctrl.signal})
+    .then(r=>r.json())
+    .then(data=>{
+      if(ctrl.signal.aborted)return;
+      const result=data?.chart?.result?.[0];
+      if(!result)throw new Error('No data');
+      const timestamps=result.timestamp||[];
+      const quote=result.indicators?.quote?.[0]||{};
+      const opens=quote.open||[],highs=quote.high||[],lows=quote.low||[],closes=quote.close||[],volumes=quote.volume||[];
+      const ohlc=[];
+      for(let i=0;i<timestamps.length;i++){
+        if(closes[i]!=null)ohlc.push({date:new Date(timestamps[i]*1000),open:opens[i],high:highs[i],low:lows[i],close:closes[i],volume:volumes[i]||0});
+      }
+      const isUp=ohlc.length>0&&ohlc[ohlc.length-1].close>=ohlc[0].close;
+
+      // Build chart + stats
+      const first=ohlc[0],last=ohlc[ohlc.length-1];
+      const high=Math.max(...ohlc.map(d=>d.high));
+      const low=Math.min(...ohlc.map(d=>d.low));
+      const avgVol=Math.round(ohlc.reduce((s,d)=>s+d.volume,0)/ohlc.length);
+
+      cw.innerHTML=`
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+          <div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">OPEN</div><div style="font-size:13px;font-weight:700">${first?.close?.toFixed(2)||'--'}</div></div>
+          <div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">HIGH</div><div style="font-size:13px;font-weight:700;color:var(--green)">${high?.toFixed(2)||'--'}</div></div>
+          <div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">LOW</div><div style="font-size:13px;font-weight:700;color:var(--red)">${low?.toFixed(2)||'--'}</div></div>
+          <div style="background:var(--card);border-radius:6px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-dim)">VOL (avg)</div><div style="font-size:11px;font-weight:700">${avgVol>=1e6?(avgVol/1e6).toFixed(1)+'M':avgVol>=1e3?(avgVol/1e3).toFixed(1)+'K':avgVol}</div></div>
+        </div>
+        <canvas id="chartCanvas" style="width:100%;height:260px;border-radius:8px;background:var(--card)"></canvas>
+        <div style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:4px">${first?.date?.toLocaleDateString('ko-KR')||''} — ${last?.date?.toLocaleDateString('ko-KR')||''} · 6개월 일간 차트 · Yahoo Finance</div>
+      `;
+      setTimeout(()=>{const c=document.getElementById('chartCanvas');if(c)drawChart(c,ohlc,isUp)},50);
+    })
+    .catch(err=>{
+      if(ctrl.signal.aborted)return;
+      cw.innerHTML=`<div style="height:340px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex-direction:column;gap:8px"><span style="font-size:16px">⚠️ 차트 로드 실패</span><span style="font-size:12px">${err.message==='No data'?'해당 종목의 히스토리컬 데이터가 없습니다':'Yahoo Finance API 연결 실패 — 잠시 후 다시 시도해주세요'}</span></div>`;
+    });
 }
 function closeModal(e){
+  if(chartAbort){chartAbort.abort();chartAbort=null}
   if(e&&e.target!==document.getElementById('modalOverlay'))return;
   document.getElementById('modalOverlay').classList.remove('show');
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modalOverlay').classList.remove('show')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(chartAbort){chartAbort.abort();chartAbort=null}document.getElementById('modalOverlay').classList.remove('show')}});
 
 // ===== INIT =====
 renderTabs();
