@@ -1,72 +1,82 @@
-#!/usr/bin/env python3
-"""Fetch 6-month historical data for 21 HBF stocks, generate data.json (max 60 pts/stock)."""
-import json, urllib.request, time, math
+import requests
+import json
+import time
+import sys
 
-STOCKS = [
-    ("sk", "000660.KS"), ("ss", "005930.KS"), ("wdc", "WDC"), ("mu", "MU"),
-    ("amat", "AMAT"), ("tel", "8035.T"), ("asml", "ASML"), ("asmi", "ASM"),
-    ("hanmi", "042700.KS"), ("psk", "031980.KS"), ("entg", "ENTG"),
-    ("soul", "357780.KS"), ("tck", "064760.KS"), ("anji", "688019.SS"),
-    ("tfme", "002156.SZ"), ("snps", "SNPS"), ("rmbs", "RMBS"), ("ter", "TER"),
-    ("adv", "6857.T"), ("tfe", "425420.KS"), ("sol", "473050.KS"),
-]
+TICKERS = {
+    "sk": "000660.KS", "ss": "005930.KS", "wdc": "WDC", "mu": "MU",
+    "amat": "AMAT", "tel": "8035.T", "asml": "ASML", "asmi": "ASM",
+    "hanmi": "042700.KS", "psk": "031980.KS", "entg": "ENTG",
+    "soul": "357780.KS", "tck": "064760.KS", "anji": "688019.SS",
+    "tfme": "002156.SZ", "snps": "SNPS", "rmbs": "RMBS", "ter": "TER",
+    "adv": "6857.T", "tfe": "425420.KS", "sol": "473050.KS"
+}
 
-MAX_POINTS = 60
-results = {}
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Accept": "application/json"
+}
 
-for sid, ticker in STOCKS:
+result = {}
+
+for idx, (key, ticker) in enumerate(TICKERS.items()):
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=6mo"
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode())
-        d = data["chart"]["result"][0]
-        timestamps = d["timestamp"]
-        q = d["indicators"]["quote"][0]
-        opens = q["open"]
-        highs = q["high"]
-        lows = q["low"]
-        closes = q["close"]
-        volumes = q["volume"]
-
-        points = []
-        n = len(timestamps)
-        step = max(1, n // MAX_POINTS) if n > MAX_POINTS else 1
-
-        for i in range(0, n, step):
-            c = closes[i]
-            if c is None:
-                continue
-            points.append({
-                "t": timestamps[i],
-                "c": round(c, 2),
-                "h": round(highs[i], 2) if highs[i] else round(c, 2),
-                "l": round(lows[i], 2) if lows[i] else round(c, 2),
-                "v": volumes[i] if volumes[i] else 0
-            })
-            if len(points) >= MAX_POINTS:
-                break
-
-        # ensure last point is included
-        last_c = closes[-1]
-        if last_c is not None and (not points or points[-1]["t"] != timestamps[-1]):
-            points.append({
-                "t": timestamps[-1],
-                "c": round(last_c, 2),
-                "h": round(highs[-1], 2) if highs[-1] else round(last_c, 2),
-                "l": round(lows[-1], 2) if lows[-1] else round(last_c, 2),
-                "v": volumes[-1] if volumes[-1] else 0
-            })
-            if len(points) > MAX_POINTS:
-                points = points[:MAX_POINTS]
-
-        results[sid] = points
-        print(f"OK  {sid:6s}  {len(points)} points  ({ticker})", flush=True)
+        resp = requests.get(url, headers=HEADERS, timeout=30)
+        if resp.status_code == 200:
+            data = resp.json()
+            chart_result = data.get("chart", {}).get("result", [])
+            if chart_result:
+                r = chart_result[0]
+                timestamps = r.get("timestamp", [])
+                quotes = r.get("indicators", {}).get("quote", [{}])[0]
+                opens = quotes.get("open", [])
+                closes = quotes.get("close", [])
+                highs = quotes.get("high", [])
+                lows = quotes.get("low", [])
+                volumes = quotes.get("volume", [])
+                
+                ohlcv = []
+                for i in range(len(timestamps)):
+                    c = closes[i] if i < len(closes) and closes[i] is not None else None
+                    if c is None:
+                        continue
+                    ohlcv.append({
+                        "t": timestamps[i],
+                        "c": round(c, 4),
+                        "h": round(highs[i], 4) if i < len(highs) and highs[i] is not None else round(c, 4),
+                        "l": round(lows[i], 4) if i < len(lows) and lows[i] is not None else round(c, 4),
+                        "v": int(volumes[i]) if i < len(volumes) and volumes[i] is not None else 0
+                    })
+                
+                # Sample to max 60 points
+                if len(ohlcv) > 60:
+                    step = len(ohlcv) / 60
+                    sampled = []
+                    for j in range(60):
+                        sampled.append(ohlcv[int(j * step)])
+                    ohlcv = sampled
+                
+                result[key] = ohlcv
+                print(f"OK: {key} ({ticker}) = {len(ohlcv)} data points", file=sys.stderr)
+            else:
+                print(f"NO_RESULT: {key} ({ticker})", file=sys.stderr)
+                result[key] = []
+        else:
+            print(f"HTTP_{resp.status_code}: {key} ({ticker})", file=sys.stderr)
+            result[key] = []
     except Exception as e:
-        print(f"FAIL {sid:6s}  {e}", flush=True)
-        results[sid] = []
-    time.sleep(0.3)
+        print(f"ERR: {key} ({ticker}): {e}", file=sys.stderr)
+        result[key] = []
+    
+    if idx < len(TICKERS) - 1:
+        time.sleep(2)
 
-with open("/opt/data/hermes/hbf_dashboard/data.json", "w") as f:
-    json.dump(results, f)
-print(f"\nSaved {sum(1 for v in results.values() if v)}/21 stocks to data.json", flush=True)
+# Write data.json
+out_path = "/opt/data/hermes/hbf_dashboard/data.json"
+with open(out_path, "w") as f:
+    json.dump(result, f, ensure_ascii=False)
+
+total_points = sum(len(v) for v in result.values())
+print(f"\nWritten {out_path}: {len(result)} stocks, {total_points} total data points", file=sys.stderr)
+print("DONE")
