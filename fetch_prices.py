@@ -1,67 +1,51 @@
-import requests
-import json
-import time
-import sys
+import json, urllib.request, ssl, time
+
+# Disable SSL verification for the API call
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
 
 TICKERS = {
-    "sk": "000660.KS", "ss": "005930.KS", "wdc": "WDC", "mu": "MU",
-    "amat": "AMAT", "tel": "8035.T", "asml": "ASML", "asmi": "ASM",
-    "hanmi": "042700.KS", "psk": "031980.KS", "entg": "ENTG",
-    "soul": "357780.KS", "tck": "064760.KS", "anji": "688019.SS",
-    "tfme": "002156.SZ", "snps": "SNPS", "rmbs": "RMBS", "ter": "TER",
-    "adv": "6857.T", "tfe": "425420.KS", "sol": "473050.KS"
-}
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    "Accept": "application/json"
+    'sk': '000660.KS', 'ss': '005930.KS', 'wdc': 'WDC', 'mu': 'MU',
+    'amat': 'AMAT', 'tel': '8035.T', 'asml': 'ASML', 'asmi': 'ASM',
+    'hanmi': '042700.KS', 'psk': '031980.KS', 'entg': 'ENTG',
+    'soul': '357780.KS', 'tck': '064760.KS', 'anji': '688019.SS',
+    'tfme': '002156.SZ', 'snps': 'SNPS', 'rmbs': 'RMBS', 'ter': 'TER',
+    'adv': '6857.T', 'tfe': '425420.KS', 'sol': '473050.KS'
 }
 
 results = {}
 
-for idx, (key, ticker) in enumerate(TICKERS.items()):
+for sid, ticker in TICKERS.items():
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=15)
-        if resp.status_code == 200:
-            data = resp.json()
-            result = data.get("chart", {}).get("result", [])
-            if result:
-                meta = result[0].get("meta", {})
-                quotes = result[0].get("indicators", {}).get("quote", [{}])[0]
-                closes = [c for c in quotes.get("close", []) if c is not None]
-                timestamps = result[0].get("timestamp", [])
-                
-                price = closes[-1] if closes else meta.get("regularMarketPrice")
-                
-                # Previous close: use second-to-last close or meta.chartPreviousClose
-                prev = None
-                if len(closes) >= 2:
-                    prev = closes[-2]
-                elif meta.get("chartPreviousClose"):
-                    prev = meta["chartPreviousClose"]
-                elif meta.get("previousClose"):
-                    prev = meta["previousClose"]
-                
-                results[key] = {
-                    "ticker": ticker,
-                    "price": price,
-                    "prev": prev,
-                    "all_closes": closes,
-                    "timestamp": timestamps[-1] if timestamps else None
-                }
-                print(f"OK: {key} ({ticker}) price={price} prev={prev}", file=sys.stderr)
-            else:
-                print(f"NO_RESULT: {key} ({ticker})", file=sys.stderr)
-                results[key] = {"ticker": ticker, "price": None, "prev": None}
-        else:
-            print(f"HTTP_{resp.status_code}: {key} ({ticker})", file=sys.stderr)
-            results[key] = {"ticker": ticker, "price": None, "prev": None}
-    except Exception as e:
-        print(f"ERR: {key} ({ticker}): {e}", file=sys.stderr)
-        results[key] = {"ticker": ticker, "price": None, "prev": None}
-    
-    if idx < len(TICKERS) - 1:
-        time.sleep(1.5)
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
+            data = json.loads(resp.read())
+        chart = data['chart']['result'][0]
+        meta = chart['meta']
+        quotes = chart['indicators']['quote'][0]
+        ts = chart['timestamp']
 
-print(json.dumps(results, indent=2, ensure_ascii=False))
+        prev_close = meta.get('chartPreviousClose', meta.get('previousClose', 0))
+        current_price = meta.get('regularMarketPrice', 0)
+        if current_price == 0 and quotes['close']:
+            current_price = quotes['close'][-1]
+
+        chg = current_price - prev_close
+        chg_pct = (chg / prev_close * 100) if prev_close else 0
+
+        results[sid] = {
+            'ticker': ticker,
+            'price': round(current_price, 2),
+            'prev': round(prev_close, 2),
+            'chg': round(chg, 2),
+            'chgPct': round(chg_pct, 2)
+        }
+        print(f"OK  {sid:6s} {ticker:12s} price={current_price:>12.2f} prev={prev_close:>12.2f} chg={chg:>+10.2f} ({chg_pct:>+6.2f}%)")
+    except Exception as e:
+        print(f"ERR {sid:6s} {ticker:12s} {e}")
+        results[sid] = {'ticker': ticker, 'error': str(e)}
+
+print("\n--- JSON ---")
+print(json.dumps(results, indent=2))
