@@ -1,11 +1,12 @@
-import json, urllib.request, ssl, time
+#!/usr/bin/env python3
+"""Fetch current prices for all 21 HBF stocks via Yahoo Finance API."""
+import json
+import urllib.request
+import urllib.error
+import time
+import sys
 
-# Disable SSL verification for the API call
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
-
-TICKERS = {
+STOCKS = {
     'sk': '000660.KS', 'ss': '005930.KS', 'wdc': 'WDC', 'mu': 'MU',
     'amat': 'AMAT', 'tel': '8035.T', 'asml': 'ASML', 'asmi': 'ASM',
     'hanmi': '042700.KS', 'psk': '031980.KS', 'entg': 'ENTG',
@@ -14,38 +15,67 @@ TICKERS = {
     'adv': '6857.T', 'tfe': '425420.KS', 'sol': '473050.KS'
 }
 
-results = {}
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+}
 
-for sid, ticker in TICKERS.items():
+def fetch_one(ticker):
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
+    req = urllib.request.Request(url, headers=HEADERS)
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
-            data = json.loads(resp.read())
-        chart = data['chart']['result'][0]
-        meta = chart['meta']
-        quotes = chart['indicators']['quote'][0]
-        ts = chart['timestamp']
-
-        prev_close = meta.get('chartPreviousClose', meta.get('previousClose', 0))
-        current_price = meta.get('regularMarketPrice', 0)
-        if current_price == 0 and quotes['close']:
-            current_price = quotes['close'][-1]
-
-        chg = current_price - prev_close
-        chg_pct = (chg / prev_close * 100) if prev_close else 0
-
-        results[sid] = {
-            'ticker': ticker,
-            'price': round(current_price, 2),
-            'prev': round(prev_close, 2),
-            'chg': round(chg, 2),
-            'chgPct': round(chg_pct, 2)
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+        result = data['chart']['result'][0]
+        meta = result['meta']
+        quotes = result['indicators']['quote'][0]
+        timestamps = result['timestamp']
+        
+        # Get the last two close prices for chg calculation
+        closes = quotes['close']
+        # Remove None values
+        valid_closes = [c for c in closes if c is not None]
+        
+        if len(valid_closes) >= 2:
+            price = valid_closes[-1]
+            prev = valid_closes[-2]
+            chg = price - prev
+            chg_pct = (chg / prev) * 100
+        elif len(valid_closes) == 1:
+            price = valid_closes[0]
+            prev = price
+            chg = 0
+            chg_pct = 0
+        else:
+            return None
+        
+        return {
+            'price': price,
+            'prev': prev,
+            'chg': chg,
+            'chgPct': chg_pct,
+            'currency': meta.get('currency', ''),
+            'marketPrice': meta.get('regularMarketPrice', price),
+            'prevClose': meta.get('chartPreviousClose', prev)
         }
-        print(f"OK  {sid:6s} {ticker:12s} price={current_price:>12.2f} prev={prev_close:>12.2f} chg={chg:>+10.2f} ({chg_pct:>+6.2f}%)")
     except Exception as e:
-        print(f"ERR {sid:6s} {ticker:12s} {e}")
-        results[sid] = {'ticker': ticker, 'error': str(e)}
+        print(f"ERROR fetching {ticker}: {e}", file=sys.stderr)
+        return None
 
-print("\n--- JSON ---")
+# Fetch all stocks
+results = {}
+for stock_id, ticker in STOCKS.items():
+    print(f"Fetching {stock_id} ({ticker})...", file=sys.stderr)
+    result = fetch_one(ticker)
+    if result:
+        results[stock_id] = result
+        print(f"  -> price={result['price']}, prev={result['prev']}, chg={result['chg']:.2f}, chgPct={result['chgPct']:.2f}%", file=sys.stderr)
+    else:
+        print(f"  -> FAILED", file=sys.stderr)
+    time.sleep(0.5)  # Rate limiting
+
+# Save results
+with open('/opt/data/hermes/hbf_dashboard/current_prices.json', 'w') as f:
+    json.dump(results, f, indent=2)
+
+print(f"\nDone! Fetched {len(results)}/{len(STOCKS)} stocks.", file=sys.stderr)
 print(json.dumps(results, indent=2))

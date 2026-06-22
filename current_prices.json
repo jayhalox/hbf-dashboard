@@ -1,86 +1,191 @@
 {
   "sk": {
-    "price": 2685000.0,
-    "prev": 2521000.0
+    "price": 2764000.0,
+    "prev": 2685000.0,
+    "chg": 79000.0,
+    "chgPct": 2.942271880819367,
+    "currency": "KRW",
+    "marketPrice": 2764000.0,
+    "prevClose": 2288000.0
   },
   "ss": {
-    "price": 362500.0,
-    "prev": 346500.0
+    "price": 354000.0,
+    "prev": 362500.0,
+    "chg": -8500.0,
+    "chgPct": -2.344827586206897,
+    "currency": "KRW",
+    "marketPrice": 354000.0,
+    "prevClose": 337000.0
   },
   "wdc": {
     "price": 746.22998046875,
-    "prev": 712.13
+    "prev": 712.1300048828125,
+    "chg": 34.0999755859375,
+    "chgPct": 4.78844808562012,
+    "currency": "USD",
+    "marketPrice": 746.23,
+    "prevClose": 529.29
   },
   "mu": {
     "price": 1133.989990234375,
-    "prev": 1043.19
+    "prev": 1043.18994140625,
+    "chg": 90.800048828125,
+    "chgPct": 8.704076335870717,
+    "currency": "USD",
+    "marketPrice": 1133.99,
+    "prevClose": 995.87
   },
   "amat": {
     "price": 617.1099853515625,
-    "prev": 592.92
+    "prev": 592.9199829101562,
+    "chg": 24.19000244140625,
+    "chgPct": 4.079808935208666,
+    "currency": "USD",
+    "marketPrice": 617.11,
+    "prevClose": 552.64
   },
   "tel": {
-    "price": 76080.0,
-    "prev": 72640.0
+    "price": 75360.0,
+    "prev": 76080.0,
+    "chg": -720.0,
+    "chgPct": -0.9463722397476341,
+    "currency": "JPY",
+    "marketPrice": 75360.0,
+    "prevClose": 70860.0
   },
   "asml": {
     "price": 1929.6800537109375,
-    "prev": 1867.83
+    "prev": 1867.8299560546875,
+    "chg": 61.85009765625,
+    "chgPct": 3.3113344957210398,
+    "currency": "USD",
+    "marketPrice": 1929.68,
+    "prevClose": 1899.48
   },
   "asmi": {
     "price": 6.539999961853027,
-    "prev": 6.83
+    "prev": 6.829999923706055,
+    "chg": -0.28999996185302734,
+    "chgPct": -4.2459731345892795,
+    "currency": "USD",
+    "marketPrice": 6.54,
+    "prevClose": 5.98
   },
   "hanmi": {
-    "price": 315500.0,
-    "prev": 319500.0
+    "price": 295000.0,
+    "prev": 315500.0,
+    "chg": -20500.0,
+    "chgPct": -6.497622820919176,
+    "currency": "KRW",
+    "marketPrice": 295000.0,
+    "prevClose": 347000.0
   },
   "psk": {
-    "price": 120500.0,
-    "prev": 61100.0
+    "price": 112500.0,
+    "prev": 120500.0,
+    "chg": -8000.0,
+    "chgPct": -6.639004149377594,
+    "currency": "KRW",
+    "marketPrice": 64000.0,
+    "prevClose": 135600.0
   },
   "entg": {
     "price": 178.77000427246094,
-    "prev": 157.34
+    "prev": 157.33999633789062,
+    "chg": 21.430007934570312,
+    "chgPct": 13.620190945313718,
+    "currency": "USD",
+    "marketPrice": 178.77,
+    "prevClose": 144.92
   },
   "soul": {
-    "price": 403000.0,
-    "prev": 281000.0
+    "price": 366000.0,
+    "prev": 403000.0,
+    "chg": -37000.0,
+    "chgPct": -9.181141439205955,
+    "currency": "KRW",
+    "marketPrice": 281000.0,
+    "prevClose": 427000.0
   },
   "tck": {
-    "price": 275000.0,
-    "prev": 121400.0
+    "price": 258500.0,
+    "prev": 275000.0,
+    "chg": -16500.0,
+    "chgPct": -6.0,
+    "currency": "KRW",
+    "marketPrice": 119900.0,
+    "prevClose": 290500.0
   },
   "anji": {
     "price": 245.99000549316406,
-    "prev": 245.62
+    "prev": 245.6199951171875,
+    "chg": 0.3700103759765625,
+    "chgPct": 0.1506434261591884,
+    "currency": "CNY",
+    "marketPrice": 245.99,
+    "prevClose": 225.0
   },
   "tfme": {
     "price": 68.2699966430664,
-    "prev": 67.22
+    "prev": 67.22000122070312,
+    "chg": 1.0499954223632812,
+    "chgPct": 1.5620282702998414,
+    "currency": "CNY",
+    "marketPrice": 68.27,
+    "prevClose": 57.22
   },
   "snps": {
     "price": 455.510009765625,
-    "prev": 461.74
+    "prev": 461.739990234375,
+    "chg": -6.22998046875,
+    "chgPct": -1.3492399619941342,
+    "currency": "USD",
+    "marketPrice": 455.51,
+    "prevClose": 456.29
   },
   "rmbs": {
     "price": 141.1699981689453,
-    "prev": 130.1
+    "prev": 130.10000610351562,
+    "chg": 11.069992065429688,
+    "chgPct": 8.50883285633493,
+    "currency": "USD",
+    "marketPrice": 141.17,
+    "prevClose": 144.47
   },
   "ter": {
     "price": 437.9200134277344,
-    "prev": 408.56
+    "prev": 408.55999755859375,
+    "chg": 29.360015869140625,
+    "chgPct": 7.186218926127233,
+    "currency": "USD",
+    "marketPrice": 437.92,
+    "prevClose": 381.4
   },
   "adv": {
-    "price": 30300.0,
-    "prev": 30060.0
+    "price": 31740.0,
+    "prev": 30300.0,
+    "chg": 1440.0,
+    "chgPct": 4.752475247524752,
+    "currency": "JPY",
+    "marketPrice": 31740.0,
+    "prevClose": 30340.0
   },
   "tfe": {
-    "price": 52000.0,
-    "prev": 25850.0
+    "price": 48800.0,
+    "prev": 52000.0,
+    "chg": -3200.0,
+    "chgPct": -6.153846153846154,
+    "currency": "KRW",
+    "marketPrice": 26250.0,
+    "prevClose": 56300.0
   },
   "sol": {
     "price": 2075.0,
-    "prev": 2055.0
+    "prev": 2075.0,
+    "chg": 0.0,
+    "chgPct": 0.0,
+    "currency": "KRW",
+    "marketPrice": 2055.0,
+    "prevClose": 2080.0
   }
 }
