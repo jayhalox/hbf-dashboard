@@ -1,115 +1,126 @@
-import json
-import urllib.request
-import time
-import sys
-import math
+import json, urllib.request, time, sys
 
-STOCKS = [
-    ('sk', '000660.KS'),
-    ('ss', '005930.KS'),
-    ('wdc', 'WDC'),
-    ('mu', 'MU'),
-    ('amat', 'AMAT'),
-    ('tel', '8035.T'),
-    ('asml', 'ASML'),
-    ('asmi', 'ASM'),
-    ('hanmi', '042700.KS'),
-    ('psk', '031980.KS'),
-    ('entg', 'ENTG'),
-    ('soul', '357780.KS'),
-    ('tck', '064760.KS'),
-    ('anji', '688019.SS'),
-    ('tfme', '002156.SZ'),
-    ('snps', 'SNPS'),
-    ('rmbs', 'RMBS'),
-    ('ter', 'TER'),
-    ('adv', '6857.T'),
-    ('tfe', '425420.KS'),
-    ('sol', '473050.KS'),
-]
+STOCKS = {
+    'sk': ('000660.KS', 'SK hynix', 'KR'),
+    'ss': ('005930.KS', 'Samsung', 'KR'),
+    'wdc': ('WDC', 'SanDisk / WD', 'US'),
+    'mu': ('MU', 'Micron', 'US'),
+    'amat': ('AMAT', 'Applied Materials', 'US'),
+    'tel': ('8035.T', 'Tokyo Electron', 'JP'),
+    'asml': ('ASML', 'ASML', 'NL'),
+    'asmi': ('ASM.AS', 'ASM International', 'NL'),
+    'hanmi': ('042700.KS', '한미반도체', 'KR'),
+    'psk': ('031980.KS', 'PSK Holdings', 'KR'),
+    'entg': ('ENTG', 'Entegris', 'US'),
+    'soul': ('357780.KS', '솔브레인', 'KR'),
+    'tck': ('064760.KS', '티씨케이', 'KR'),
+    'anji': ('688019.SS', 'Anji Micro', 'CN'),
+    'tfme': ('002156.SZ', 'TFME (通富)', 'CN'),
+    'snps': ('SNPS', 'Synopsys', 'US'),
+    'rmbs': ('RMBS', 'Rambus', 'US'),
+    'ter': ('TER', 'Teradyne', 'US'),
+    'adv': ('6857.T', 'Advantest', 'JP'),
+    'tfe': ('425420.KS', '티에프이', 'KR'),
+    'sol': ('473050.KS', 'SOL AI소부장 ETF', 'KR'),
+}
 
-def fetch_chart(ticker, range_str="5d"):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range={range_str}"
-    req = urllib.request.Request(url, headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    })
+def fetch_current(ticker):
+    """Fetch current price + previous close from Yahoo Finance chart API."""
+    url = f'https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d'
     try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode())
         result = data['chart']['result'][0]
         meta = result['meta']
-        quotes = result['indicators']['quote'][0]
+        price = meta.get('regularMarketPrice')
+        prev_close = meta.get('previousClose') or meta.get('chartPreviousClose')
+        # Fallback: use previous day close from indicators
+        if price is None and 'indicators' in result:
+            quotes = result['indicators']['quote'][0]
+            closes = [c for c in quotes.get('close', []) if c is not None]
+            if closes:
+                price = closes[-1]
+        if prev_close is None and 'indicators' in result:
+            quotes = result['indicators']['quote'][0]
+            closes = [c for c in quotes.get('close', []) if c is not None]
+            if len(closes) >= 2:
+                prev_close = closes[-2]
+        return price, prev_close
+    except Exception as e:
+        print(f"  ERROR fetching {ticker}: {e}", file=sys.stderr)
+        return None, None
+
+def fetch_historical(ticker):
+    """Fetch 6-month daily data, return list of {t, c, h, l, v}."""
+    url = f'https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=6mo'
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+        result = data['chart']['result'][0]
         timestamps = result.get('timestamp', [])
+        quotes = result['indicators']['quote'][0]
+        opens = quotes.get('open', [])
         closes = quotes.get('close', [])
         highs = quotes.get('high', [])
         lows = quotes.get('low', [])
         volumes = quotes.get('volume', [])
-        return {
-            'price': meta.get('regularMarketPrice'),
-            'prev': meta.get('previousClose') or meta.get('chartPreviousClose'),
-            'high': meta.get('regularMarketDayHigh'),
-            'low': meta.get('regularMarketDayLow'),
-            'quotes': list(zip(timestamps, closes, highs, lows, volumes))
-        }
+        points = []
+        for i in range(len(timestamps)):
+            c = closes[i] if i < len(closes) else None
+            if c is None:
+                continue
+            h = highs[i] if i < len(highs) else c
+            l = lows[i] if i < len(lows) else c
+            v = volumes[i] if i < len(volumes) else 0
+            if v is None:
+                v = 0
+            if h is None:
+                h = c
+            if l is None:
+                l = c
+            points.append({'t': timestamps[i], 'c': c, 'h': h, 'l': l, 'v': v})
+        # Downsample to max 60 points
+        if len(points) > 60:
+            step = len(points) / 60
+            sampled = []
+            for j in range(60):
+                idx = int(j * step)
+                sampled.append(points[idx])
+            points = sampled
+        return points
     except Exception as e:
-        print(f"ERROR fetching {ticker}: {e}", file=sys.stderr)
-        return None
+        print(f"  ERROR historical {ticker}: {e}", file=sys.stderr)
+        return []
 
-# STEP 1: Fetch current prices (5d range)
-print("=== STEP 1: Current Prices ===")
-prices = {}
-for stock_id, ticker in STOCKS:
-    print(f"Fetching {stock_id} ({ticker})...", end=" ", flush=True)
-    data = fetch_chart(ticker, "5d")
-    if data and data['price'] is not None:
-        prices[stock_id] = data
-        chg = data['price'] - (data['prev'] or data['price'])
-        pct = (chg / data['prev'] * 100) if data['prev'] and data['prev'] != 0 else 0
-        print(f"Price={data['price']}, Prev={data['prev']}, Chg={chg:.2f}, ChgPct={pct:.2f}%")
-    else:
-        print("NO DATA")
-    time.sleep(0.4)  # rate limit
+print("=== STEP 1: Fetching current prices ===")
+results = {}
+for sid, (ticker, name, country) in STOCKS.items():
+    price, prev = fetch_current(ticker)
+    chg = round(price - prev, 4) if (price is not None and prev is not None) else None
+    chgPct = round((chg / prev) * 100, 2) if (chg is not None and prev and prev != 0) else None
+    results[sid] = {'price': price, 'prev': prev, 'chg': chg, 'chgPct': chgPct}
+    sign = '+' if (chgPct and chgPct > 0) else ''
+    print(f"  {ticker:15s} price={price} prev={prev} chg={chg} chgPct={sign}{chgPct}%")
+    time.sleep(0.3)  # Rate limiting
 
-# Write price summary
+print("\n=== STEP 2: Saving current prices JSON ===")
 with open('/opt/data/hermes/hbf_dashboard/prices.json', 'w') as f:
-    json.dump(prices, f, indent=2, default=str)
+    json.dump(results, f, indent=2)
+print("  Saved to prices.json")
 
-print("\n=== Price fetch complete ===")
-print(json.dumps({k: {'price': v['price'], 'prev': v['prev']} for k, v in prices.items()}, indent=2, default=str))
-
-# STEP 3: Fetch 6-month historical data
-print("\n=== STEP 3: 6-Month Historical Data ===")
+print("\n=== STEP 3: Fetching 6-month historical data ===")
 historical = {}
-for stock_id, ticker in STOCKS:
-    print(f"Fetching {stock_id} ({ticker}) 6mo...", end=" ", flush=True)
-    data = fetch_chart(ticker, "6mo")
-    if data and data['quotes']:
-        quotes = data['quotes']
-        # Clean None values
-        cleaned = []
-        for t, c, h, l, v in quotes:
-            if c is not None:
-                cleaned.append({
-                    't': t,
-                    'c': round(c, 4),
-                    'h': round(h, 4) if h is not None else round(c, 4),
-                    'l': round(l, 4) if l is not None else round(c, 4),
-                    'v': int(v) if v is not None else 0
-                })
-        # Sample to max 60 points
-        if len(cleaned) > 60:
-            step = len(cleaned) / 60
-            sampled = [cleaned[math.floor(i * step)] for i in range(60)]
-        else:
-            sampled = cleaned
-        historical[stock_id] = sampled
-        print(f"{len(cleaned)} raw -> {len(sampled)} sampled")
-    else:
-        print("NO DATA")
-    time.sleep(0.4)
+for sid, (ticker, name, country) in STOCKS.items():
+    pts = fetch_historical(ticker)
+    historical[sid] = pts
+    print(f"  {ticker:15s} -> {len(pts)} data points")
+    time.sleep(0.3)
 
+print("\n=== Saving data.json ===")
 with open('/opt/data/hermes/hbf_dashboard/data.json', 'w') as f:
-    json.dump(historical, f, indent=2)
+    json.dump(historical, f)
+print("  Saved data.json")
 
-print("\n=== Historical data written to data.json ===")
-print(f"Stocks in data.json: {list(historical.keys())}")
+print("\n=== DONE ===")
